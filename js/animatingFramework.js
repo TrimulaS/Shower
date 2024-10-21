@@ -65,7 +65,7 @@ class AnimateBatch {
         cancelAnimationFrame(this.requestId);
         this.isAnimating = false;
     }
-
+    //Method to animate batch of shapes
     #animate(previousTime) {
         if (!this.isAnimating) return;
         
