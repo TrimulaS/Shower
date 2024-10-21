@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shower</title>
+    <style>
+
+        .viewport{
+            border: 1px solid blue;
+            /* Display */
+            width  : 1282px;
+            height : 722px;
+            padding: 1px;
+        }
+        .indent{
+            /* width: 400px; */
+            height: fit-content;
+            background-color: rgb(220, 253, 240);
+        }
+        canvas {
+            border: 1px solid black;
+            /* width : 640;
+            height: 720; */
+        }
+        .middle{
+            flex-grow: 1;
+            background-color: lightgray;
+        }
+        .faucet-conainer{
+            display: flex; justify-self: center; align-self: center;
+        }
+
+        .button{
+        flex-grow: 0;
+        flex-shrink: 1;
+        display: inline;
+
+        
+        background-color: #007bff;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        }
+        .button:hover {
+                background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Faucet 2D -->
+<div class = 'viewport' style = "display: flex;    flex-direction: column; ">
+    <div style = "display: flex;    flex-direction: column; ">
+
+        <div style = "display: flex;    flex-direction: row; ">
+            
+            <div>
+                <!-- Water -->
+                <canvas id="canvas-water" width = '720' height = '720'></canvas>
+            </div>
+            <div class="middle"></div>
+            <div class="faucet-conainer" style = "display: flex;    flex-direction: column; ">
+                <div class = 'faucet' id="leverContainerContrast"></div>
+                <div class = 'faucet' id="leverContainer2D-1"></div>
+                <div><input type="checkbox" id="startAnimation"> Start Animation</div>
+                <div id = 'div-fps' class = 'indent'>????</div>
+                <button id = 'button-do' class = 'button'>Do</button>
+                <!-- <div id="divSpeed"></div> -->
+            </div>
+            <div class = 'indent'></div>
+        </div>
+    </div>
+</div>
+
+
+<script src="js/leverControl.js"></script>
+<script src="js/waterJet.js"></script> 
+<script src="js/leverControl2D.js"></script>
+<script src="js/star.js"></script>
+<script src="js/utilities.js"></script>
+<script src="js/animatingFramework.js"></script>
+
+<script>
+
+// Example of creating multiple lever controls on a page
+document.addEventListener('DOMContentLoaded', () => {
+ 
+    let redVolume = 0;
+    let blueVolume = 0;
+    const controllerSize = 400;
+
+    //Jets
+    const jetHeight = 400;  //720;
+    const jetDistance = 20;
+    const numOfJets = 1;
+
+    //Stars
+    const maxNumOfStars = 1;
+    const starHeightDelta = 100;
+    
+    //Controls
+    const container2D_1 = document.getElementById('leverContainer2D-1');
+    const lever2D_1 = new LeverControl2D(container2D_1, 0.5 ,0.31, "Common Faucet","", controllerSize);
+
+    const divFps = document.getElementById('div-fps');
+    const buttonDo = document.getElementById('button-do');
+
+    canvas = document.getElementById('canvas-water');
+
+
+    // Animation
+    const animateBatch = new AnimateBatch(canvas);
+    const ctx = animateBatch.ctx;
+
+    const animatedItem1 = new AnimatedItem(() => {
+        divFps.textContent = `FPS: ${Math.round(1000 / animateBatch.delta_ms)} ms`;
+    }); // Без повторений, с постоянным обновлением
+    
+
+    animateBatch.add(animatedItem1);
+
+
+    //---------------------------------------------------------------------------- Falling Jets
+
+
+
+    
+    //Conatiner to manage properties of jets only
+    const jets = [];
+    for (let i=0; i < numOfJets; i++){
+        const jet = new WaterJet(ctx, (i + 1) * jetDistance, 0, 0, jetHeight);
+        animateBatch.add (jet);
+        jets.push(jet);
+    }
+
+
+    // Обработчик для чекбокса
+    const checkbox = document.getElementById('startAnimation');
+    
+
+    checkbox.addEventListener('change', (e) => {
+        if(checkbox.checked){
+            animateBatch.start();
+        }
+        else {
+            animateBatch.stop();
+        }
+    });
+
+    lever2D_1.addListener((newValue, newValue2) => {
+        for (let i=0; i<numOfJets; i++){
+            if (i % 2 === 0) {
+
+            }
+            else{
+
+            }
+
+            const red  = Math.round(255 * (    newValue)); // уменьшение красного компонента
+            const blue = Math.round(255 * (1 - newValue));     // увеличение синего компонента
+            const color = `rgb(${red}, 0, ${blue})`;
+
+            redVolume = red;
+            blueVolume = blue;
+
+            jets[i].setColor(color); // Пример применения цвета в объекте анимации
+            lever2D_1.progressColor = color;
+
+            jets[i].setWidth(newValue2 * 15);
+            jets[i].setSpeed(newValue2 * 7 + 1);
+
+            const threshold = 0.02;
+            if(newValue2 > threshold && !checkbox.checked ){
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event('change')); // Программно запускаем событие "change"
+            }
+            else if(newValue2 <= threshold && checkbox.checked){
+                checkbox.checked = false;
+                checkbox.dispatchEvent(new Event('change')); // Программно запускаем событие "change"
+            }
+        }
+    });
+
+
+
+
+    //Stars
+
+    // redVolume = getRedFromColor(jets[0].color);
+    // blueVolume = getBlueFromColor(jets[0].color);
+
+
+    const leverContainerContrast = document.getElementById('leverContainerContrast');
+    // (container, value = -1, title = "", progressColor = "", size = 150)
+    const leverContrast = new LeverControl(leverContainerContrast, 0.8, 'Contrast', 'yellow',controllerSize);
+    //Star effect
+    leverContrast.addListener((newValue) => {
+
+        // const stars = animateBatch.getInstancesOf(RandomStar);
+        
+        // //Threshold when starts appeas
+        // if(newValue > 0.01 && stars.length < maxNumOfStars){
+        //     for (let i=0; i < numOfJets; i++){
+        //         // Probability of stars happens
+        //         if(Math.random() -  (1-newValue) > 0.5){
+        //             const level = jets[i].levelDown;
+        //             const y =  level - starHeightDelta * Math.random();
+        //             const newStar = new RandomStar(ctx, jets[i].left,y);
+        //             stars.push(newStar);
+        //             animateBatch.add (newStar);
+
+        //             //console.log(` - add star ${ jets[i].left} ${level} ${ newStar.centerX} ${newStar.centerY}  stars num: ${stars.length}`);
+        //         }
+                
+        //     }
+        // }
+    });
+
+    for (let i=0; i < numOfJets; i++){
+
+        jets[i].OnJetOutOfBorder( () => {
+            const stars = animateBatch.getInstancesOf(RandomStar);
+            if( leverContrast.getValue() > 0.01 && stars.length < maxNumOfStars){
+                //threshhold
+                if(1 - Math.random() < 0.9){
+                    console.log('_____________________________listener________')
+                    addStar();
+
+
+                }
+
+            }
+
+        });
+    }
+
+
+    buttonDo.addEventListener('click', function() {
+        addStar();
+    });
+
+    function addStar(){
+        const i = 0;
+        const level = jets[i].levelDown;
+        const y =  level - starHeightDelta * Math.random();
+        const newStar = new RandomStar(ctx, jets[i].left, y);
+        animateBatch.add(newStar);
+        console.log(`______________star added ${newStar.id}, isAlive: ${newStar.isAlive}`);
+        //console.log(` - add star ${ jets[i].left} ${y} ${ newStar.centerX} ${newStar.centerY}  stars num: ${stars.length}`);
+    }
+
+
+
+
+});
+
+
+
+</script>
+
+</body>
+</html>
