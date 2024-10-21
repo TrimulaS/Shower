@@ -1,8 +1,5 @@
 class RandomStar {
     static count = 0;
-        
-        // Star is gone:
-        
 
     constructor(ctx, centerX, centerY, spikeLength = 2) {
         this.ctx = ctx;
@@ -103,7 +100,8 @@ class RandomStar {
 
         if(!this.isAlive) {
             console.log(` (!)  ${this.id} A is no alive anymore`)
-            OnStarGone();
+            // Implement litener when star is expired
+            if(this.OnStarGone)this.OnStarGone();
             return;
         }
 
@@ -137,7 +135,7 @@ class RandomStar {
         }
     }
     addOnStarGone(callback){
-        OnStarGone = callback;
+        this.OnStarGone = callback;
     }
 }
 
