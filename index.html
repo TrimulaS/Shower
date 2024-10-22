@@ -64,7 +64,7 @@
                 <div class = 'faucet' id="leverContainer2D-1"></div>
                 <div><input type="checkbox" id="startAnimation"> Start Animation</div>
                 <div id = 'div-fps' class = 'indent'>????</div>
-                <button id = 'button-do' class = 'button'>Do</button>
+                <button id = 'button-do' class = 'button'>Add star</button>
                 <!-- <div id="divSpeed"></div> -->
             </div>
             <div class = 'indent'></div>
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(  stars.length < maxNumOfStars ){                             //leverContrast.getValue() > 0.01 &&
                 //threshhold
                 if(1 - Math.random() < 0.9){
-                    console.log('_____________________________star listener occuered________')
+                    console.log('_____________________________star listener occured________')
                     addStar(i);
                 }
             }
@@ -205,7 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     buttonDo.addEventListener('click', function() {
-        const i = Math.round(animatedBatch.getInstancesOf(RandomStar).length * Math.random )
+        const i = Math.round(animatedBatch.getInstancesOf(RandomStar).length * Math.random() )
+        console.log(`${i}--`)
         addStar(i);
     });
 

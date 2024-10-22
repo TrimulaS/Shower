@@ -111,7 +111,7 @@ class AnimatedBatch {
 
     itemsToString() {
         let strArray = this.animatedItems.map((item, index) => {
-            return `\t ${index}. ${item.id} :  ${item.isAlive}`;
+            return `\t ${index}. ${item.id}   isAlive :  ${item.isAlive}`;
         });
     
         let str = strArray.join("\n");
