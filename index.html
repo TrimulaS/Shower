@@ -78,7 +78,7 @@
 <script src="js/leverControl2D.js"></script>
 <script src="js/star.js"></script>
 <script src="js/utilities.js"></script>
-<script src="js/animatingFramework.js"></script>
+<script src="js/animateFramework.js"></script>
 
 <script>
 
@@ -109,19 +109,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Animation
-    const animateBatch = new AnimateBatch(canvas);
-    const ctx = animateBatch.ctx;
+    const animatedBatch = new AnimatedBatch(canvas);
+    const ctx = animatedBatch.ctx;
 
     const animatedItem1 = new AnimatedItem(() => {
-        divFps.textContent = `FPS: ${Math.round(1000 / animateBatch.delta_ms)} ms`;
+        divFps.textContent = `FPS: ${Math.round(1000 / animatedBatch.delta_ms)}`;
     }); // Без повторений, с постоянным обновлением
-    
 
-    animateBatch.add(animatedItem1);
-
+    animatedBatch.add(animatedItem1);
 
     //---------------------------------------------------------------------------- Falling Jets
-
 
 
     
@@ -129,21 +126,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const jets = [];
     for (let i=0; i < numOfJets; i++){
         const jet = new WaterJet(ctx, (i + 1) * jetDistance, 0, 0, jetHeight);
-        animateBatch.add (jet);
+        animatedBatch.add (jet);
         jets.push(jet);
     }
 
-
-    // Обработчик для чекбокса
     const checkbox = document.getElementById('startAnimation');
     
-
     checkbox.addEventListener('change', (e) => {
         if(checkbox.checked){
-            animateBatch.start();
+            animatedBatch.start();
         }
         else {
-            animateBatch.stop();
+            animatedBatch.stop();
         }
     });
 
@@ -156,8 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             }
 
-            const red  = Math.round(255 * (    newValue)); // уменьшение красного компонента
-            const blue = Math.round(255 * (1 - newValue));     // увеличение синего компонента
+            const red  = Math.round(255 * (    newValue)); 
+            const blue = Math.round(255 * (1 - newValue));     
             const color = `rgb(${red}, 0, ${blue})`;
 
             redVolume = red;
@@ -183,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
     //Stars
 
     // redVolume = getRedFromColor(jets[0].color);
@@ -196,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //Star effect
     leverContrast.addListener((newValue) => {
 
-        // const stars = animateBatch.getInstancesOf(RandomStar);
+        // const stars = animatedBatch.getInstancesOf(RandomStar);
         
         // //Threshold when starts appeas
         // if(newValue > 0.01 && stars.length < maxNumOfStars){
@@ -219,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i=0; i < numOfJets; i++){
 
         jets[i].OnJetOutOfBorder( () => {
-            const stars = animateBatch.getInstancesOf(RandomStar);
+            const stars = animatedBatch.getInstancesOf(RandomStar);
             if( leverContrast.getValue() > 0.01 && stars.length < maxNumOfStars){
                 //threshhold
                 if(1 - Math.random() < 0.9){
@@ -244,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const level = jets[i].levelDown;
         const y =  level - starHeightDelta * Math.random();
         const newStar = new RandomStar(ctx, jets[i].left, y);
-        animateBatch.add(newStar);
+        animatedBatch.add(newStar);
         console.log(`______________star added ${newStar.id}, isAlive: ${newStar.isAlive}`);
         //console.log(` - add star ${ jets[i].left} ${y} ${ newStar.centerX} ${newStar.centerY}  stars num: ${stars.length}`);
     }

@@ -37,75 +37,74 @@ buttonAnimate.addEventListener('click', function () {
 
 
 //----------------------------------------------------------------------------------------------- Класс для управления пакетами анимаций
-class AnimateBatch {
-    animationListners = [];
+class AnimatedBatch {
+    animateListners = [];
 
     constructor(canvas) {
         this.ctx = canvas.getContext('2d');
         this.animatedItems = [];
         this.isAnimating = false;
-        this.delta_ms = 0;                  // Delta between draw() methods run
+
+        this.previousTime = performance.now();
+        this.delta_ms = 0;                         // Delta between draw() methods run
     }
 
     add(...items) {
         this.animatedItems.push(...items);
-        console.log(`--- After Adding ${this.animatedItems.length}`);
+        console.log(`--- After Adding animatedItem ${this.animatedItems.length}`);
         this.itemsToString() ;
     }
 
-    addOnAnimate(callback){
-        this.animationListners.push(callback);
+    addOnBeforeAnimate(callback){
+        this.animateListners.push(callback);
+    }
+
+    //Method to animate batch of shapes
+    #animate(currentTime) {
+        if (!this.isAnimating) return;
+
+        this.delta_ms = currentTime - this.previousTime;
+        this.previousTime = currentTime;
+
+        console.log(`......delta_ms: ${this.delta_ms}`);
+
+
+        // Implementing listeres before draw() 
+        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.animateListners.forEach(listener => listener(this.delta_ms));
+
+        console.log(`--- Before filtering ${this.animatedItems.length}`);
+        this.itemsToString() ;
+        this.animatedItems = this.animatedItems.filter((item) => {
+            //if(this.delta_ms < 500) // Avoiding jerks: If delay is too long do not draw based on time delta
+            item.draw(this.delta_ms);
+            return item.isAlive; 
+        });
+        console.log(`--- After filtering ${this.animatedItems.length}`);
+        this.itemsToString() ;
+
+
+        // If array of shapes still is not empty
+        if (this.animatedItems.length > 0) {
+            this.requestId = requestAnimationFrame((currentTime) => this.#animate(currentTime));
+            // console.log(`  -AnimateBatch length: ${this.animatedItems.length}, RandomStar: ${getInstancesOf(RandomStar).length}`);
+        } else {
+            this.isAnimating = false; 
+            // this.ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем холст
+            console.log(` # AnimatedBatch: Animation stopped, no live animation item remains: ${this.animatedItems} length: ${this.animatedItems.length}`);
+        }
     }
     start(){
         this.isAnimating = true;
-        this.#animate(0);
+        this.#animate(performance.now());
     }
 
     stop(){
         cancelAnimationFrame(this.requestId);
         this.isAnimating = false;
     }
-    //Method to animate batch of shapes
-    #animate(previousTime) {
-        if (!this.isAnimating) return;
-        
-        const currentTime = performance.now();  // Получаем текущее время
-        this.delta_ms = previousTime ? currentTime - previousTime : 0;  // Если previousTime нет, используем 0 для первого кадра
-        console.log(`delta_ms ${this.delta_ms}`);
 
-
-        // Implementing listeres before draw() method of included graphic items (usually to clear graphic context)
-        this.ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем холст
-        this.animationListners.forEach(listener => listener(this.delta_ms));
-
-        console.log(`--- Before filtering ${this.animatedItems.length}`);
-        this.itemsToString() ;
-        this.animatedItems = this.animatedItems.filter((item) => {
-            if(this.delta_ms < 500) // Avoiding jerks: If delay is too long do not draw based on time delta
-            item.draw(this.delta_ms);
-            // Тут перебираются все элемены исходного массива this.animatedItems ?
-            return item.isAlive; // Оставляем только те, что еще активны
-        });
-        console.log(`--- After filtering ${this.animatedItems.length}`);
-        this.itemsToString() ;
-
-
-
-
-        // If array of shapes not empty
-        if (this.animatedItems.length > 0) {
-            this.requestId = requestAnimationFrame((newTime) => this.#animate(newTime));
-
-            // this.requestId = requestAnimationInterval( (newTime) => this.#animate(newTime));
-            // console.log(`  -AnimateBatch length: ${this.animatedItems.length}, RandomStar: ${getInstancesOf(RandomStar).length}`);
-        } else {
-            this.isAnimating = false; // Останавливаем анимацию, если нет активных объектов
-            // this.ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем холст
-            console.log(` --- AnimatedBatch: Animation stopped, no live animation item remains: ${this.animatedItems} length: ${this.animatedItems.length}`);
-        }
-    }
-
-    // Метод для получения всех экземпляров заданного класса
+    // Extract animatedItems of certain type 
     getInstancesOf(className) {
         return this.animatedItems.filter(item => item instanceof className);
     }
@@ -123,32 +122,7 @@ class AnimateBatch {
 
 }
 
-// //Alternative 
 
-function requestAnimationInterval(callback) {
-    // Определим начальное время
-    let start = performance.now();
-    
-    // Интервал обновления - около 60 FPS
-    const interval = 1000 / 60;
-    
-    // Создаём идентификатор интервала
-    const intervalId = setInterval(() => {
-        const currentTime = performance.now();
-        const newTime = currentTime - start;
-        
-        // Вызываем переданный callback с newTime
-        callback(newTime);
-        clearInterval(intervalId);
-    }, interval);
-    
-    // Возвращаем идентификатор интервала для последующей отмены
-    return intervalId;
-}
-
-function cancelAnimationInterval(intervalId) {
-    clearInterval(intervalId);
-}
 
 
 
