@@ -85,18 +85,18 @@
 // Example of creating multiple lever controls on a page
 document.addEventListener('DOMContentLoaded', () => {
  
-    let redVolume = 0;
-    let blueVolume = 0;
-    const controllerSize = 400;
+    let redVolume = 0
+    let blueVolume = 0
+    const controllerSize = 400
 
     //Jets
-    const jetHeight = 400;  //720;
-    const jetDistance = 20;
-    const numOfJets = 10;
+    const jetHeight = 400  //720
+    const jetDistance = 20
+    const numOfJets = 2
 
     //Stars
-    const maxNumOfStars = 10;
-    const starHeightDelta = 100;
+    const maxNumOfStars = 2
+    const starHeightDelta = 100
     
     //Controls
     const container2D_1 = document.getElementById('leverContainer2D-1');
@@ -157,24 +157,23 @@ document.addEventListener('DOMContentLoaded', () => {
             redVolume = red;
             blueVolume = blue;
 
-            jets[i].setColor(color); // Пример применения цвета в объекте анимации
+            jets[i].setColor(color); 
             lever2D_1.progressColor = color;
 
             jets[i].setWidth(newValue2 * 15);
-            jets[i].setSpeed(newValue2 * 7 + 1);
+            jets[i].setSpeed(newValue2 * 0.5 + 0.1);        // value chosen empiricaly
 
             const threshold = 0.02;
             if(newValue2 > threshold && !checkbox.checked ){
                 checkbox.checked = true;
-                checkbox.dispatchEvent(new Event('change')); // Программно запускаем событие "change"
+                checkbox.dispatchEvent(new Event('change')); // generating event "change"
             }
             else if(newValue2 <= threshold && checkbox.checked){
                 checkbox.checked = false;
-                checkbox.dispatchEvent(new Event('change')); // Программно запускаем событие "change"
+                checkbox.dispatchEvent(new Event('change')); // generating event "change"
             }
         }
     });
-
 
 
     //Stars
@@ -182,71 +181,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // redVolume = getRedFromColor(jets[0].color);
     // blueVolume = getBlueFromColor(jets[0].color);
 
-
     const leverContainerContrast = document.getElementById('leverContainerContrast');
     // (container, value = -1, title = "", progressColor = "", size = 150)
     const leverContrast = new LeverControl(leverContainerContrast, 0.8, 'Contrast', 'yellow',controllerSize);
     //Star effect
     leverContrast.addListener((newValue) => {
 
-        // const stars = animatedBatch.getInstancesOf(RandomStar);
-        
-        // //Threshold when starts appeas
-        // if(newValue > 0.01 && stars.length < maxNumOfStars){
-        //     for (let i=0; i < numOfJets; i++){
-        //         // Probability of stars happens
-        //         if(Math.random() -  (1-newValue) > 0.5){
-        //             const level = jets[i].levelDown;
-        //             const y =  level - starHeightDelta * Math.random();
-        //             const newStar = new RandomStar(ctx, jets[i].left,y);
-        //             stars.push(newStar);
-        //             animateBatch.add (newStar);
-
-        //             //console.log(` - add star ${ jets[i].left} ${level} ${ newStar.centerX} ${newStar.centerY}  stars num: ${stars.length}`);
-        //         }
-                
-        //     }
-        // }
     });
 
     for (let i=0; i < numOfJets; i++){
 
         jets[i].OnJetOutOfBorder( () => {
             const stars = animatedBatch.getInstancesOf(RandomStar);
-            if( leverContrast.getValue() > 0.01 && stars.length < maxNumOfStars){
+            if(  stars.length < maxNumOfStars ){                             //leverContrast.getValue() > 0.01 &&
                 //threshhold
                 if(1 - Math.random() < 0.9){
-                    console.log('_____________________________listener________')
-                    addStar();
-
-
+                    console.log('_____________________________star listener occuered________')
+                    addStar(i);
                 }
-
             }
-
         });
     }
 
 
     buttonDo.addEventListener('click', function() {
-        addStar();
+        const i = Math.round(animatedBatch.getInstancesOf(RandomStar).length * Math.random )
+        addStar(i);
     });
 
-    function addStar(){
-        const i = 0;
+    function addStar(i){
         const level = jets[i].levelDown;
         const y =  level - starHeightDelta * Math.random();
         const newStar = new RandomStar(ctx, jets[i].left, y);
         animatedBatch.add(newStar);
-        console.log(`______________star added ${newStar.id}, isAlive: ${newStar.isAlive}`);
+        console.log(`______________star added ${newStar.id}, to jet: ${i}  isAlive: ${newStar.isAlive}`);
         //console.log(` - add star ${ jets[i].left} ${y} ${ newStar.centerX} ${newStar.centerY}  stars num: ${stars.length}`);
     }
-
-
-
-
 });
-
 
 
 </script>

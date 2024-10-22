@@ -15,35 +15,28 @@ class WaterJet {
     OnJetOutOfBorderCallBack = null;
 
 
-    constructor(ctx, left, top, levelUp = 20, levelDown = 500, speed = 2, color = 'blue', width = 5) {
-        this.canvas = canvas;
-        this.ctx = ctx;     //canvas.getContext('2d');
+    constructor(ctx, left, top, levelUp = 20, levelDown = 500, speed = 0.1, color = 'blue', width = 5) {
+        this.ctx = ctx;    
         this.left = left;
         this.top = top;
-        this.levelUp = levelUp;
-        this.levelDown = levelDown;
-        this.speed = speed;     // pixel per ms 
+        this.levelUp = levelUp;         // Level to start draw  the jet
+        this.levelDown = levelDown;     // Level to finish draw  the jet
+        this.speed = speed;             // pixel per ms 
         this.color = color;
         this.width = width;
 
         this.rectangles = [];
         this.lastTime = 0;
         
-           // (!) this variable should be in any object intended to animated witn animated batch
-        this.isAlive = true;
+        this.isAlive = true;             // (!) this variable should be in any object intended to animated witn animatedBatch
 
         WaterJet.count ++;
         this.id = `WaterJet-${WaterJet.count}`;
     }
 
-
-
-    // Метод для создания нового прямоугольника
     createRectangle() {
-        const jetLength = Math.random() * this.jetLengthVariablePart + this.jetLengthConstPart;  // Случайная длина 10..30px
-        //console.log(`----- New:  jetLength ${jetLength}  levelUp ${this.levelUp}`);
-        //Defining space between jets
-        this.jetSpace = this.jetSpaceVariablePart * Math.random() + this.jetSpaceConstPart;
+        const jetLength = Math.random() * this.jetLengthVariablePart + this.jetLengthConstPart;  
+        this.jetSpace   = Math.random() * this.jetSpaceVariablePart  + this.jetSpaceConstPart;         //Defining space between jets
         return {
             x: this.left,
             y: this.levelUp - jetLength,
@@ -52,28 +45,17 @@ class WaterJet {
 
     }
 
-
-    // Рисование текущего состояния
     draw(delta_ms) {
-        if(!this.isAlive) {
-            console.log(` (!)  ${this.id} A is no alive anymore`)
-            return;
-        }
-        this.timeElapsed += delta_ms;
 
-        //console.log(`  --- delta_ms (in Jet): ${delta_ms}`);
         const { ctx, rectangles, left, levelUp, levelDown, width, color, speed, jetSpace } = this;
 
         // Обновление позиции прямоугольников
+        let i = 0;
         this.rectangles.forEach(rect => {
-
-            // console.log(`-1 rect.y ${rect.y}`);
-            rect.y += speed * delta_ms;  // Скорость 2px/sec
-            // console.log(`-2 rect.y ${rect.y}`);
-
+            rect.y += speed * delta_ms; 
         });
 
-        // Удаление вышедших за пределы прямоугольников
+        // First rectangle is below bottom level:
         if (this.rectangles.length > 0  && this.rectangles[0].y > levelDown) {
             this.rectangles.shift();
 

@@ -7,8 +7,8 @@ class RandomStar {
         this.centerY = centerY;
         this.spikeLength = spikeLength;
 
-        this.timeShine = 200;        //ms
-        this.timeFade = 100;
+        this.timeShine = 2000;        //ms
+        this.timeFade = 2000;         //ms
         this.timeToLive = this.timeShine + this.timeFade;     // in ms
         this.timeElapsed = 0;
 
@@ -31,10 +31,7 @@ class RandomStar {
         this.isAlive = true;
         this.OnStarGone = null;
 
-        // this.timeLive = 5000;
-        // this.timeFade = 200;
-        // this.draw();
-        // setTimeout(() => this.fadeOut(), this.timeLive); // через 3 секунды начать исчезновение
+
     }
     
     #rnd(minValue, maxValue){
