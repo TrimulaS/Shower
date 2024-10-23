@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Figure Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+        button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="640" height="480"></canvas>
+    <div style="display: flex;  flex-direction: row; gap: 2px; ">
+        <button id='button-generate'>Generate Figure</button>
+        <button id="button-animate">Start</button>
+        <button id="button-delete">Delete All</button>
+        <button id="button-delete-last">Delete last</button>
+    </div>
+
+    <script>
+        const buttonGenerate = document.getElementById('button-generate');
+        const buttonAnimate = document.getElementById('button-animate');
+        const buttonDeleteAll = document.getElementById('button-delete');
+        const buttonDeleteLast = document.getElementById('button-delete-last');
+        const canvas = document.getElementById('myCanvas'); 
+        
+        const ctx = canvas.getContext('2d');
+        function rndColor(){return `rgb(${255 * Math.random()}, ${255 * Math.random()}, ${255 * Math.random()})`;};
+        
+        // Shape to draw
+        class CircleFade {
+            constructor(ctx) {
+                this.ctx = ctx;
+                this.isActive = true;
+                this.cycle = 100;  // draw only 100 times
+                this.x = Math.floor(Math.random() * canvas.width);
+                this.y = Math.floor(Math.random() * canvas.height);
+                this.onCycleEnd = null;  // Листенер на событие конца цикла
+            }
+        
+            draw() {
+                this.ctx.beginPath();
+                this.ctx.arc(this.x, this.y, 10, 0, 2 * Math.PI);
+                this.ctx.fillStyle = rndColor();
+                this.ctx.fill();
+                this.ctx.stroke();
+        
+                this.cycle--;
+                if (this.cycle <= 0) {
+                    this.isActive = false;
+                    if (this.onCycleEnd) {
+                        this.onCycleEnd();  // Implementing listener
+                    }
+                }
+            }
+        
+            // Listener setup
+            setOnCycleEndListener(callback) {
+                this.onCycleEnd = callback;
+            }
+        }
+        
+        // Class to collect  and draw shapes
+        class RenderStack {
+            constructor(ctx) {
+                this.ctx = ctx;
+                this.shapes = [];
+                this.shapesBuffer = [];
+                this.isPlaying = false;
+            }
+        
+            add(shape) {
+                //this.shapes.push(shape);
+                this.shapesBuffer.push(shape);
+
+            }
+            clear(){
+                this.shapes = [];
+                this.shapesBuffer = [];
+            }
+        
+            start() {
+                this.isPlaying = true;
+                this.render(); // Начинаем рендеринг
+            }
+        
+            stop() {
+                this.isPlaying = false;
+            }
+        
+            render() {
+                this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if(this.shapesBuffer.length > 0){
+                    console.log(`${this.shapesBuffer.toString()}`);
+                    // Переносим элементы из буфера в основной массив
+                    this.shapes.push(...this.shapesBuffer);
+
+                    // Очищаем буфер
+                    this.shapesBuffer = [];
+                    // if( this.isPlaying == false) this.start();
+                }
+                // Update shape list and draw it
+                this.shapes = this.shapes.filter((item) => {
+                    item.draw();
+                    return item.isActive; 
+                });
+        
+                // Stop the animation if the list i empty
+                if (this.shapes.length <= 0 && this.shapesBuffer.length <= 0) {
+                    this.isPlaying = false;
+                    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+        
+                console.log(`length: ${this.shapes.length}`);
+        
+                if (this.isPlaying) {
+                    requestAnimationFrame(() => this.render());
+                }
+            }
+        }
+        
+        // Create new Shape and adding listener to it
+        function createShapeWithListener() {
+            const shape = new CircleFade(ctx);
+            // ---(b.)--- Adding shape by listener
+            shape.setOnCycleEndListener(() => {
+                console.log(`Cycle ended for shape at (${shape.x}, ${shape.y}), creating a new one`);
+                const newShape = createShapeWithListener();  
+                renderStack.add(newShape);  
+                
+                if (!renderStack.isPlaying) {
+                    renderStack.start(); 
+                }
+            });
+            return shape;
+        }
+        
+        const renderStack = new RenderStack(ctx);
+        // ---(a.)--- Adding shape by button click
+        buttonGenerate.addEventListener('click', () => {
+            renderStack.add( createShapeWithListener() );
+            if (!renderStack.isPlaying) buttonAnimate.click();
+        });
+        
+        buttonAnimate.addEventListener('click', () => {
+            renderStack.isPlaying ? renderStack.stop() : renderStack.start();
+            buttonAnimate.textContent = renderStack.isPlaying ? 'Stop' : 'Start';
+        });
+        
+        buttonDeleteAll.addEventListener('click', () => {
+            renderStack.clear();
+        });
+        buttonDeleteLast.addEventListener('click', () => {
+            if(renderStack.shapes.length > 0) renderStack.shapes.pop(); 
+        });
+        
+        
+    </script>
+
+</body>
+</html>

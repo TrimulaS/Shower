@@ -38,11 +38,12 @@ buttonAnimate.addEventListener('click', function () {
 
 //----------------------------------------------------------------------------------------------- Класс для управления пакетами анимаций
 class AnimatedBatch {
-    animateListners = [];
+    renderListners = [];
 
     constructor(canvas) {
         this.ctx = canvas.getContext('2d');
-        this.animatedItems = [];
+        this.shapes = [];
+        this.shapesBuffer = [];
         this.isAnimating = false;
 
         this.previousTime = performance.now();
@@ -50,53 +51,62 @@ class AnimatedBatch {
     }
 
     add(...items) {
-        this.animatedItems.push(...items);
-        console.log(`--- After Adding animatedItem ${this.animatedItems.length}`);
-        this.itemsToString() ;
+        this.shapesBuffer.push(...items);
+        // console.log(`--- After Adding animatedItem ${this.shapes.length}`);
+        // this.itemsToString() ;
+    }
+    clear(){
+        this.shapes = [];
+        this.shapesBuffer = [];
     }
 
-    addOnBeforeAnimate(callback){
-        this.animateListners.push(callback);
+    setOnBeforeAnimate(callback){
+        this.renderListners.push(callback);
     }
 
     //Method to animate batch of shapes
-    #animate(currentTime) {
-        if (!this.isAnimating) return;
+    #render(currentTime) {
+        if(this.shapesBuffer.length > 0){
+            console.log(`${this.shapesBuffer.toString()}`);
+            // Переносим элементы из буфера в основной массив
+            this.shapes.push(...this.shapesBuffer);
+
+            // Очищаем буфер
+            this.shapesBuffer = [];
+        }
+
+        // Stop the animation if all lists are empty
+        if (this.shapes.length <= 0 && this.shapesBuffer.length <= 0) {
+            this.isPlaying = false;
+            this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log(`#  Finished:  AnimatedBatch: shapes: ${this.shapes} length: ${this.shapes.length}`);
+        }
 
         this.delta_ms = currentTime - this.previousTime;
         this.previousTime = currentTime;
 
-        console.log(`......delta_ms: ${this.delta_ms}`);
+        //console.log(`......delta_ms: ${this.delta_ms}`);
 
-
-        // Implementing listeres before draw() 
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-        this.animateListners.forEach(listener => listener(this.delta_ms));
+        this.renderListners.forEach(listener => listener(this.delta_ms));
 
-        console.log(`--- Before filtering ${this.animatedItems.length}`);
+        console.log(`--- Before filtering ${this.shapes.length}`);
         this.itemsToString() ;
-        this.animatedItems = this.animatedItems.filter((item) => {
-            //if(this.delta_ms < 500) // Avoiding jerks: If delay is too long do not draw based on time delta
+        this.shapes = this.shapes.filter((item) => {
             item.draw(this.delta_ms);
             return item.isAlive; 
         });
-        console.log(`--- After filtering ${this.animatedItems.length}`);
+        console.log(`--- After filtering ${this.shapes.length}`);
         this.itemsToString() ;
 
-
-        // If array of shapes still is not empty
-        if (this.animatedItems.length > 0) {
-            this.requestId = requestAnimationFrame((currentTime) => this.#animate(currentTime));
-            // console.log(`  -AnimateBatch length: ${this.animatedItems.length}, RandomStar: ${getInstancesOf(RandomStar).length}`);
-        } else {
-            this.isAnimating = false; 
-            // this.ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем холст
-            console.log(` # AnimatedBatch: Animation stopped, no live animation item remains: ${this.animatedItems} length: ${this.animatedItems.length}`);
-        }
+        if (this.isAnimating) {
+            this.requestId = requestAnimationFrame((currentTime) => this.#render(currentTime));
+        } 
     }
+
     start(){
         this.isAnimating = true;
-        this.#animate(performance.now());
+        this.#render(performance.now());
     }
 
     stop(){
@@ -106,11 +116,11 @@ class AnimatedBatch {
 
     // Extract animatedItems of certain type 
     getInstancesOf(className) {
-        return this.animatedItems.filter(item => item instanceof className);
+        return this.shapes.filter(item => item instanceof className);
     }
 
     itemsToString() {
-        let strArray = this.animatedItems.map((item, index) => {
+        let strArray = this.shapes.map((item, index) => {
             return `\t ${index}. ${item.id}   isAlive :  ${item.isAlive}`;
         });
     
