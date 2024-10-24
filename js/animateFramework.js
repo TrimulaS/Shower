@@ -82,8 +82,8 @@ class AnimatedBatch {
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
         this.renderListners.forEach(listener => listener(this.delta_ms));
 
-        console.log(`--- Before filtering ${this.shapes.length}`);
-        this.itemsToString() ;
+        // console.log(`--- Before filtering ${this.shapes.length}`);
+        // this.itemsToString() ;
         // EDIT Modify the existing array, must work from end to beginning
         for( let next = this.shapes.length - 1; next >= 0; --next )  {
 
@@ -96,8 +96,8 @@ class AnimatedBatch {
             }
             
           }
-        console.log(`--- After filtering ${this.shapes.length}`);
-        this.itemsToString() ;
+        // console.log(`--- After filtering ${this.shapes.length}`);
+        // this.itemsToString() ;
         
         if(this.isAnimating){
             this.requestId = requestAnimationFrame((currentTime) => this.#render(currentTime));
@@ -174,7 +174,7 @@ class AnimatedItem {
             if(this.repeat == 0) this.isAlive = false;
         }
         if(!this.isAlive) {
-            console.log(` X  ${this.id} finished`)
+            // console.log(` X  ${this.id} finished`)
             return;
         }
 

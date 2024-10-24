@@ -7,7 +7,7 @@
     <style>
 
         .viewport{
-            border: 1px solid blue;
+            border: 1px solid rgb(200, 200, 255);
             /* Display */
             width  : 1282px;
             height : 722px;
@@ -34,9 +34,11 @@
         /* Anisothermal*/
         .blue {
             color: blue;
+            white-space: nowrap;
         }
         .red {
             color: red;
+            white-space: nowrap;
         }
 
         /* Buttons */
@@ -91,20 +93,22 @@
                     </label>
                     <label>
                         <input type="radio" class="radio-button"  name="faucet-type" value="anisothermal"> 
-                        <span class="blue">A</span>
-                        <span class="red">n</span>
-                        <span class="blue">i</span>
-                        <span class="red">s</span>
-                        <span class="blue">o</span>
-                        <span class="red">t</span>
-                        <span class="blue">h</span>
-                        <span class="red">e</span>
-                        <span class="blue">r</span>
-                        <span class="red">m</span>
-                        <span class="blue">a</span>
-                        <span class="red">l</span>
+                           <span class="blue">A</span><!--
+                        --><span class="blue">i</span><!--
+                        --><span class="red" >n</span><!--
+                        --><span class="blue">i</span><!--
+                        --><span class="red" >s</span><!--
+                        --><span class="blue">o</span><!--
+                        --><span class="red" >t</span><!--
+                        --><span class="blue">h</span><!--
+                        --><span class="red" >e</span><!--
+                        --><span class="blue">r</span><!--
+                        --><span class="red" >m</span><!--
+                        --><span class="blue">a</span><!--
+                        --><span class="red" >l</span>
                     </label>
                 </div>
+                
                 <div class = 'faucet' id="leverContainerContrast"></div>
                 <div class = 'faucet' id="leverContainer2D-1"></div>
                 <div id = 'div-fps' class = 'indent'> ? </div>
@@ -139,36 +143,98 @@ document.addEventListener('DOMContentLoaded', () => {
     const controllerSize = 400
 
     //Jets
+    const jetWidth = 10
     const jetHeight = 720
     const jetDistance = 30
     const numOfJets = 40
 
     //Stars
-    const maxNumOfStars = 40
+    const maxNumOfStars = 30
     const starHeightDelta = 10
+    const starShine = 400;       //ms
+    const starFade  = 400;        //ms
+    const spikeLength = 5
     
-    //Controls
+    //--------------------------------------------------------------------------------------------------------Controls
+
     const container2D_1 = document.getElementById('leverContainer2D-1');
-    const lever2D_1 = new LeverControl2D(container2D_1, 0.5 ,0.31, "Common Faucet","", controllerSize);
+    const lever2D_1 = new LeverControl2D(container2D_1, 0 ,0.31, "Common Faucet","", controllerSize);
 
     const divFps = document.getElementById('div-fps')
     const buttonStart = document.getElementById('button-start')
     const buttonStop = document.getElementById('button-stop')
     const buttonDo = document.getElementById('button-do')
-    // Immitatinng code: it is not alowded to use in-built script
+
+    // Cntrast Leverage
+    const leverContainerContrast = document.getElementById('leverContainerContrast');
+    // (container, value = -1, title = "", progressColor = "", size = 150)
+    const leverContrast = new LeverControl(leverContainerContrast, 0, 'Contrast', '',controllerSize);
+    
+    // Progress draw
+    leverContrast.setOnProgresDraw( (ctx, valueOrigin, valueOld, p)=>{
+
+        const value = 1 - valueOrigin;      // To revert value 
+        const w = ctx.canvas.width - 2 * p;
+        const h = ctx.canvas.height - 2 * p;
+        const hSubtract = 1;
+
+        // Минимальное и максимальное количество делений
+        const minDivisions = 2;  // Начальное количество делений (как при значении 0)
+        const maxDivisions = Math.min(w, h);  // Максимальное количество делений, исходя из минимальной стороны
+
+        const num = Math.round(value * 100);
+        //console.log(`delta: ${valueOld - value}   new: ${value}   old: ${valueOld}  origin value ${valueOrigin}`);
+
+        if(value < 1){
+            const num = Math.round(value * 100);
+            const divisions = 2 + num;
+            // Размер одного прямоугольника
+            const rectWidth = w / divisions;
+            const rectHeight = h / (divisions - hSubtract);
+
+            // Очистка предыдущего состояния контекста
+            ctx.clearRect(0, 0, w, h);
+
+            // Рисуем чередующиеся прямоугольники
+            for (let i = 0; i < divisions; i++) {
+                for (let j = 0; j < divisions - hSubtract; j++) {
+                    // Чередование цветов (синий и красный)
+                    ctx.fillStyle = (i + j) % 2 === 0 ? 'blue' : 'red';
+                    ctx.fillRect(i * rectWidth + p, j * rectHeight + p, rectWidth, rectHeight);
+                }
+            }
+        }
+        if(value == 1) {
+            ctx.fillStyle = 'rgb(255,0,255)';
+            ctx.fillRect(p,p, w, h);
+        }
+    });
+
+
+    leverContrast.setValue(0) 
+
 
 	const radioButtons1 = document.querySelectorAll('input[name="faucet-type"]');
     radioButtons1.forEach(radio => {
         radio.addEventListener('change', (event) => {
             if (event.target.checked) {
-				alert(event.target.value);
+                switch (event.target.value) {
+                    case 'common':
+                        leverContainerContrast.style.display = 'none';
+                        leverContrast.setValue(0) 
+                        break;
+                    case 'anisothermal':
+                        leverContainerContrast.style.display = 'block';
+                        break;
+                    default:
+                        console.log(`Wrong radioButton value ${event.target.checked}.`);
+                    }
+
             }
         });
     });
 
-
     canvas = document.getElementById('canvas-water');
-
 
     // Animation
     const animatedBatch = new AnimatedBatch(canvas);
@@ -182,8 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //---------------------------------------------------------------------------- Falling Jets
 
-
-    
     // Fill-Up jets
     const jets = [];
     for (let i=0; i < numOfJets; i++){
@@ -202,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
             animatedBatch.stop();
         }
     });
-    //---------------------------------------------------Levarage 2D
+    //---------------------------------------------------------------------------------------Levarage 2D
     lever2D_1.addListener((newValue, newValue2) => {
         for (let i=0; i<numOfJets; i++){
             if (i % 2 === 0) {
@@ -212,8 +276,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             }
 
-            const red  = Math.round(255 * (    newValue)); 
-            const blue = Math.round(255 * (1 - newValue));     
+            const red  =  newValue < 0.5 ? Math.round(255 * newValue * 2): 255; 
+            const blue =  newValue < 0.5 ? 255 : Math.round(255 * (2 - newValue*2 ));     
             const color = `rgb(${red}, 0, ${blue})`;
 
             redVolume = red;
@@ -222,91 +286,25 @@ document.addEventListener('DOMContentLoaded', () => {
             jets[i].setColor(color); 
             lever2D_1.progressColor = color;
 
-            jets[i].setWidth(newValue2 * 15);
+            jets[i].setWidth(newValue2 * jetWidth);
             jets[i].setSpeed(newValue2 * 0.5 + 0.1);        // value chosen empiricaly
 
             const threshold = 0.02;
-
-            
-
         }
     });
-
+    lever2D_1.setValues(0.5, 0.5);
 
     //Stars
-
     // redVolume = getRedFromColor(jets[0].color);
     // blueVolume = getBlueFromColor(jets[0].color);
 
-    const leverContainerContrast = document.getElementById('leverContainerContrast');
-    // (container, value = -1, title = "", progressColor = "", size = 150)
-    const leverContrast = new LeverControl(leverContainerContrast, 0.8, 'Contrast', 'yellow',controllerSize);
-    //Star effect
-    
-    // Progress draw
-    leverContrast.setOnProgresDraw( (ctx, value, valueOld, p)=>{
-
-        const w = ctx.canvas.width;
-        const h = ctx.canvas.height;
-
-        // Минимальное и максимальное количество делений
-        const minDivisions = 2;  // Начальное количество делений (как при значении 0)
-        const maxDivisions = Math.min(w, h);  // Максимальное количество делений, исходя из минимальной стороны
-
-        if(Math.abs(value - valueOld) >= 0.01){
-            const num = Math.round(value * 100);
-            const divisions = 2 + num;
-            // Размер одного прямоугольника
-            const rectWidth = w / divisions;
-            const rectHeight = h / (divisions - 1);
-
-            // Очистка предыдущего состояния контекста
-            ctx.clearRect(0, 0, w, h);
-
-            // Рисуем чередующиеся прямоугольники
-            for (let i = 0; i < divisions; i++) {
-                for (let j = 0; j < divisions; j++) {
-                    // Чередование цветов (синий и красный)
-                    ctx.fillStyle = (i + j) % 2 === 0 ? 'blue' : 'red';
-                    ctx.fillRect(i * rectWidth, j * rectHeight, rectWidth, rectHeight);
-                }
-            }
-        }
-
-        // // Плавное увеличение количества делений, используя степенную функцию
-        // const divisions = Math.floor(minDivisions + Math.pow(value, 0.5) * (maxDivisions - minDivisions));
-
-        // // Размер одного прямоугольника
-        // const rectWidth = w / divisions;
-        // const rectHeight = h / divisions;
-
-        // // Очистка предыдущего состояния контекста
-        // ctx.clearRect(0, 0, w, h);
-
-        // // Рисуем чередующиеся прямоугольники
-        // for (let i = 0; i < divisions; i++) {
-        //     for (let j = 0; j < divisions; j++) {
-        //         // Чередование цветов (синий и красный)
-        //         ctx.fillStyle = (i + j) % 2 === 0 ? 'blue' : 'red';
-        //         ctx.fillRect(i * rectWidth, j * rectHeight, rectWidth, rectHeight);
-        //     }
-        // }
-    });
-
-    
-    
-    leverContrast.addListener((valueNew, valueOld) => {
-
-    });
-
+    // Adding star when drop is gone
     for (let i=0; i < numOfJets; i++){
-
         jets[i].OnJetOutOfBorder( () => {
             const stars = animatedBatch.getInstancesOf(RandomStar);
-            if(  stars.length < maxNumOfStars ){                             //leverContrast.getValue() > 0.01 &&
+            if(  stars.length < maxNumOfStars ){                                //&& leverContrast.getValue() > 0.2    
                 //threshhold
-                if(1 - Math.random() < 0.9){
-                    console.log('_____________________________star listener occured________')
+                if(leverContrast.getValue() * leverContrast.getValue() >= Math.random() ){
                     addStar(i);
                 }
             }
@@ -337,10 +335,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function addStar(i){
         const level = jets[i].levelDown;
         const y =  level - starHeightDelta * Math.random();
-        const newStar = new RandomStar(ctx, jets[i].left, y);
+        //                 constructor(ctx, centerX, centerY, c = 2, timeShine = 100, timeFade = 200  ) 
+        const newStar = new RandomStar(ctx, jets[i].left, y, spikeLength * Math.random(), starShine * Math.random(), starFade * Math.random());
         animatedBatch.add(newStar);
-        console.log(`______________star added ${newStar.id}, to jet: ${i}  isAlive: ${newStar.isAlive}`);
-        //console.log(` - add star ${ jets[i].left} ${y} ${ newStar.centerX} ${newStar.centerY}  stars num: ${stars.length}`);
+        // console.log(`______________star added ${newStar.id}, to jet: ${i}  isAlive: ${newStar.isAlive}`);
+
     }
 });
 

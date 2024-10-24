@@ -1,4 +1,33 @@
-// draw initial value
+/**
+ *     leverContrast.addListener((valueNew, valueOld) => {
+ *
+ *    });
+ * 
+ *      constructor()
+ *          init();
+ *              draw();
+ *          setValue()
+ *              #setAngle
+ *  
+ * 
+ * 
+ *          #onMouseWheel(e)
+ *              #setAngle(e
+ *                  #setValueInternal(
+ *                      notifyListeners();
+ *                          listener()
+ *                      draw()
+ * 
+ * 
+ *      #onMouseDown(e)
+ *           #onMouseMove(e)
+ *              #setAngle(
+ *                  #setValueInternal(
+ *                      notifyListeners();
+ *                          listener()
+ *                      draw()
+ *          #onMouseUp() {
+ */
 
 
 class LeverControl {
@@ -72,6 +101,8 @@ class LeverControl {
 
     setOnProgresDraw(callback){
         this._onProgressDraw = callback;
+        // re-draw after progress bar render changed
+        this.draw();
     }
 
     
@@ -115,12 +146,13 @@ class LeverControl {
                 const p = padding; 
                 ctx.fillRect(0 + p, height - heightProgress + p, width - 2*p, heightProgress - 2*p);
             }
+
         });
 
         this.init();
         if(value==-1){
             this.#value = 0;
-            this.#valueOld = 0;
+            this.#valueOld = -1;
         } else{
             this.setValue(value);
         }
@@ -142,6 +174,7 @@ class LeverControl {
         if (typeof listener === 'function') {
             this.listeners.push(listener);
         }
+
     }
 
     // Уведомление слушателей
@@ -166,6 +199,7 @@ class LeverControl {
     // Приватный метод для обновления значения
     #setValueInternal(newValue) {
         if (this.#value !== newValue) {
+            this.#valueOld = this.#value;
             this.#value = newValue;
             if(this.isListenerOn){
                 this.notifyListeners();
@@ -210,7 +244,7 @@ class LeverControl {
         //     ctx.fillRect(0 + p, canvas.height - height + p, size - 2*p, height - 2*p);
         // }
 
-        this._onProgressDraw(ctx, this.#value, this.#progressPadding);
+        this._onProgressDraw(ctx, this.#value, this.#valueOld, this.#progressPadding);
 
         // Линия
         ctx.beginPath();
@@ -240,15 +274,28 @@ class LeverControl {
         ctx.font = '16px Arial';
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
+
+        ctx.strokeStyle = 'white';  // Цвет обводки
+        ctx.lineWidth = 3;          // Толщина обводки
+
         if(this.title != "") {                               //If no title - than procent will be as title 
+            ctx.strokeText(`${this.title}` , x0, y0 / 2 - 18);
             ctx.fillText(`${this.title}` , x0, y0 / 2 - 18);
+
+            ctx.strokeText(`${percentage}%`, x0, y0 / 2 + 16 / 2);
             ctx.fillText(`${percentage}%`, x0, y0 / 2 + 16 / 2);
         }
         else {
+            ctx.strokeText(`${percentage}%`, x0, y0 / 2 - 18);
             ctx.fillText(`${percentage}%`, x0, y0 / 2 - 18);
+
+            ctx.strokeText(`val = ${Math.round(this.#value * 10000) / 10000}`, x0, y0 / 2 + 16 / 2);
             ctx.fillText(`val = ${Math.round(this.#value * 10000) / 10000}`, x0, y0 / 2 + 16 / 2);
             
         }
+
+
+
         
         
         

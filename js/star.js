@@ -1,14 +1,14 @@
 class RandomStar {
     static count = 0;
 
-    constructor(ctx, centerX, centerY, spikeLength = 2) {
+    constructor(ctx, centerX, centerY, spikeLength = 2, timeShine = 100, timeFade = 200  ) {
         this.ctx = ctx;
         this.centerX = centerX;
         this.centerY = centerY;
         this.spikeLength = spikeLength;
 
-        this.timeShine = 100;        //ms
-        this.timeFade = 200;         //ms
+        this.timeShine = timeShine;        //ms
+        this.timeFade =  timeFade;         //ms
         this.timeToLive = this.timeShine + this.timeFade;     // in ms
         this.timeElapsed = 0;
 
@@ -89,14 +89,14 @@ class RandomStar {
     draw(delta_ms) {
 
         this.timeElapsed += delta_ms;
-        console.log(`---${this.id}  delta_ms: ${delta_ms}   timeElapsed: ${this.timeElapsed}`);
+        // console.log(`---${this.id}  delta_ms: ${delta_ms}   timeElapsed: ${this.timeElapsed}`);
         if(this.timeElapsed > this.timeToLive || this.opacity < 0) {
             this.isAlive = false;
-            console.log(`(!)  Star is gone: ${this.id}  timeElapsed : ${this.timeElapsed}  opacity: ${this.opacity}`);
+            // console.log(`(!)  Star is gone: ${this.id}  timeElapsed : ${this.timeElapsed}  opacity: ${this.opacity}`);
         }
 
         if(!this.isAlive) {
-            console.log(` (!)  ${this.id} A is no alive anymore`)
+            //console.log(` (!)  ${this.id} A is no alive anymore`)
             // Implement litener when star is expired
             if(this.OnStarGone)this.OnStarGone();
             return;
@@ -128,7 +128,7 @@ class RandomStar {
         //If shine time finished - fading startred: opacity will decrease
         if(this.timeElapsed > this.timeShine){
             this.opacity -= 1 - (this.timeElapsed - this.timeShine) / this.timeFade;            // it is fading
-            console.log(`- fading: ${this.id} opacity: ${this.opacity}`);
+            // console.log(`- fading: ${this.id} opacity: ${this.opacity}`);
         }
     }
     addOnStarGone(callback){

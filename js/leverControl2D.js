@@ -173,6 +173,7 @@ class LeverControl2D {
         if (typeof listener === 'function') {
             this.listeners.push(listener);
         }
+
     }
 
     // Уведомление слушателей
@@ -232,12 +233,17 @@ class LeverControl2D {
     setValue(newValue) {
         this.#setAngle( (1 - newValue) * Math.PI );
     }
+
     setValue2(newValue2) {
         // Check if the new value is in ranges
         if(newValue2 >= 0 && newValue2 <= 1){
             this.#setValue2Internal(newValue2)
         }
 
+    }
+    setValues(newValue, newValue2) {
+        this. setValue(newValue);
+        this. setValue2(newValue2);
     }
 
     //Assign valuew  avoiding ping pong 
