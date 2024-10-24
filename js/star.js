@@ -7,8 +7,8 @@ class RandomStar {
         this.centerY = centerY;
         this.spikeLength = spikeLength;
 
-        this.timeShine = 2000;        //ms
-        this.timeFade = 2000;         //ms
+        this.timeShine = 100;        //ms
+        this.timeFade = 200;         //ms
         this.timeToLive = this.timeShine + this.timeFade;     // in ms
         this.timeElapsed = 0;
 

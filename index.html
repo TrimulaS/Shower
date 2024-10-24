@@ -31,24 +31,48 @@
             display: flex; justify-self: center; align-self: center;
         }
 
-        .button{
-        flex-grow: 0;
-        flex-shrink: 1;
-        display: inline;
+        /* Anisothermal*/
+        .blue {
+            color: blue;
+        }
+        .red {
+            color: red;
+        }
 
-        
-        background-color: #007bff;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
+        /* Buttons */
+        .button{
+            flex-grow: 0;
+            flex-shrink: 1;
+            display: inline;
+            
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         .button:hover {
-                background-color: #ddd;
+             background-color: #ddd;
         }
+
+        /* Decoration */
+        .embossed1, .toolbar, .splitter {
+            background-color:        #eee;
+            border-left:   1px solid #fff;
+            border-top:    1px solid #fff;
+            border-right:  1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+        }
+        .embossed2, .button{
+            background-color:        #eee;
+            border-left:   2px solid #fff;
+            border-top:    2px solid #fff;
+            border-right:  2px solid #ddd;
+            border-bottom: 2px solid #ddd;
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- Faucet 2D -->
+<!-- Faucet 2D -->
 <div class = 'viewport' style = "display: flex;    flex-direction: column; ">
     <div style = "display: flex;    flex-direction: column; ">
 
@@ -60,11 +84,36 @@
             </div>
             <div class="middle"></div>
             <div class="faucet-conainer" style = "display: flex;    flex-direction: column; ">
+                <div>
+                    <div><input type="checkbox" id="startAnimation"> Start Animation</div>
+                    <label>
+                        <input type="radio" class="radio-button" name="faucet-type" value="common" checked> Common
+                    </label>
+                    <label>
+                        <input type="radio" class="radio-button"  name="faucet-type" value="anisothermal"> 
+                        <span class="blue">A</span>
+                        <span class="red">n</span>
+                        <span class="blue">i</span>
+                        <span class="red">s</span>
+                        <span class="blue">o</span>
+                        <span class="red">t</span>
+                        <span class="blue">h</span>
+                        <span class="red">e</span>
+                        <span class="blue">r</span>
+                        <span class="red">m</span>
+                        <span class="blue">a</span>
+                        <span class="red">l</span>
+                    </label>
+                </div>
                 <div class = 'faucet' id="leverContainerContrast"></div>
                 <div class = 'faucet' id="leverContainer2D-1"></div>
-                <div><input type="checkbox" id="startAnimation"> Start Animation</div>
-                <div id = 'div-fps' class = 'indent'>????</div>
-                <button id = 'button-do' class = 'button'>Add star</button>
+                <div id = 'div-fps' class = 'indent'> ? </div>
+                <div style="display: flex; direction: row; gap: 3px;">
+                    <button id = 'button-start' class = 'button'>Start</button>
+                    <button id = 'button-stop' class = 'button'>Stop</button>
+                    <button id = 'button-do' class = 'button'>Add star</button>
+                </div>
+
                 <!-- <div id="divSpeed"></div> -->
             </div>
             <div class = 'indent'></div>
@@ -90,20 +139,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const controllerSize = 400
 
     //Jets
-    const jetHeight = 400  //720
-    const jetDistance = 20
-    const numOfJets = 2
+    const jetHeight = 720
+    const jetDistance = 30
+    const numOfJets = 40
 
     //Stars
-    const maxNumOfStars = 2
-    const starHeightDelta = 100
+    const maxNumOfStars = 40
+    const starHeightDelta = 10
     
     //Controls
     const container2D_1 = document.getElementById('leverContainer2D-1');
     const lever2D_1 = new LeverControl2D(container2D_1, 0.5 ,0.31, "Common Faucet","", controllerSize);
 
-    const divFps = document.getElementById('div-fps');
-    const buttonDo = document.getElementById('button-do');
+    const divFps = document.getElementById('div-fps')
+    const buttonStart = document.getElementById('button-start')
+    const buttonStop = document.getElementById('button-stop')
+    const buttonDo = document.getElementById('button-do')
+    // Immitatinng code: it is not alowded to use in-built script
+
+	const radioButtons1 = document.querySelectorAll('input[name="faucet-type"]');
+    radioButtons1.forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            if (event.target.checked) {
+				alert(event.target.value);
+            }
+        });
+    });
+
 
     canvas = document.getElementById('canvas-water');
 
@@ -122,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     
-    //Conatiner to manage properties of jets only
+    // Fill-Up jets
     const jets = [];
     for (let i=0; i < numOfJets; i++){
         const jet = new WaterJet(ctx, (i + 1) * jetDistance, 0, 0, jetHeight);
@@ -140,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             animatedBatch.stop();
         }
     });
-
+    //---------------------------------------------------Levarage 2D
     lever2D_1.addListener((newValue, newValue2) => {
         for (let i=0; i<numOfJets; i++){
             if (i % 2 === 0) {
@@ -164,14 +226,9 @@ document.addEventListener('DOMContentLoaded', () => {
             jets[i].setSpeed(newValue2 * 0.5 + 0.1);        // value chosen empiricaly
 
             const threshold = 0.02;
-            if(newValue2 > threshold && !checkbox.checked ){
-                checkbox.checked = true;
-                checkbox.dispatchEvent(new Event('change')); // generating event "change"
-            }
-            else if(newValue2 <= threshold && checkbox.checked){
-                checkbox.checked = false;
-                checkbox.dispatchEvent(new Event('change')); // generating event "change"
-            }
+
+            
+
         }
     });
 
@@ -185,7 +242,60 @@ document.addEventListener('DOMContentLoaded', () => {
     // (container, value = -1, title = "", progressColor = "", size = 150)
     const leverContrast = new LeverControl(leverContainerContrast, 0.8, 'Contrast', 'yellow',controllerSize);
     //Star effect
-    leverContrast.addListener((newValue) => {
+    
+    // Progress draw
+    leverContrast.setOnProgresDraw( (ctx, value, valueOld, p)=>{
+
+        const w = ctx.canvas.width;
+        const h = ctx.canvas.height;
+
+        // Минимальное и максимальное количество делений
+        const minDivisions = 2;  // Начальное количество делений (как при значении 0)
+        const maxDivisions = Math.min(w, h);  // Максимальное количество делений, исходя из минимальной стороны
+
+        if(Math.abs(value - valueOld) >= 0.01){
+            const num = Math.round(value * 100);
+            const divisions = 2 + num;
+            // Размер одного прямоугольника
+            const rectWidth = w / divisions;
+            const rectHeight = h / (divisions - 1);
+
+            // Очистка предыдущего состояния контекста
+            ctx.clearRect(0, 0, w, h);
+
+            // Рисуем чередующиеся прямоугольники
+            for (let i = 0; i < divisions; i++) {
+                for (let j = 0; j < divisions; j++) {
+                    // Чередование цветов (синий и красный)
+                    ctx.fillStyle = (i + j) % 2 === 0 ? 'blue' : 'red';
+                    ctx.fillRect(i * rectWidth, j * rectHeight, rectWidth, rectHeight);
+                }
+            }
+        }
+
+        // // Плавное увеличение количества делений, используя степенную функцию
+        // const divisions = Math.floor(minDivisions + Math.pow(value, 0.5) * (maxDivisions - minDivisions));
+
+        // // Размер одного прямоугольника
+        // const rectWidth = w / divisions;
+        // const rectHeight = h / divisions;
+
+        // // Очистка предыдущего состояния контекста
+        // ctx.clearRect(0, 0, w, h);
+
+        // // Рисуем чередующиеся прямоугольники
+        // for (let i = 0; i < divisions; i++) {
+        //     for (let j = 0; j < divisions; j++) {
+        //         // Чередование цветов (синий и красный)
+        //         ctx.fillStyle = (i + j) % 2 === 0 ? 'blue' : 'red';
+        //         ctx.fillRect(i * rectWidth, j * rectHeight, rectWidth, rectHeight);
+        //     }
+        // }
+    });
+
+    
+    
+    leverContrast.addListener((valueNew, valueOld) => {
 
     });
 
@@ -206,8 +316,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     buttonDo.addEventListener('click', function() {
         const i = Math.round(animatedBatch.getInstancesOf(RandomStar).length * Math.random() )
-        console.log(`${i}--`)
         addStar(i);
+    });
+    buttonStart.addEventListener('click', function() {
+        if(animatedBatch.isAnimating){
+            animatedBatch.pause();
+            buttonStart.textContent = 'Start';
+        }
+        else{
+            animatedBatch.start();
+            buttonStart.textContent = 'Pause';
+        }
+    });
+    buttonStop.addEventListener('click', function() {
+        animatedBatch.stop()
+        buttonStart.textContent = 'Start';
+        animatedBatch.add(...jets);
     });
 
     function addStar(i){

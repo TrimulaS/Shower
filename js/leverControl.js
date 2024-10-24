@@ -8,11 +8,13 @@ class LeverControl {
     #progressPadding = 2;
     
     #value = 0.0; // Initial value from 0.0 to 1.0
+    #valueOld = 0.0; // Initial value from 0.0 to 1.0
     #angle = Math.PI; // initial angle (in radians)
     #onMouseMoveHandler;
     #onMouseUpHandler;
     #onMouseLeaveHandler;
-    
+
+ 
 
 
     // Приватный метод для обработки нажатия мыши
@@ -67,11 +69,16 @@ class LeverControl {
     #onMouseLeave(){
     
     }
+
+    setOnProgresDraw(callback){
+        this._onProgressDraw = callback;
+    }
+
     
     
     constructor (container, value = -1, title = "", progressColor = "", size = 150) {
         this.title = title;
-        //this.value = value;
+
         this.progressColor = progressColor;
         this.size = size;
         this.container = container;
@@ -89,19 +96,36 @@ class LeverControl {
         this.isListenerOn = false;
 
         // Привязанные функции сохраняем сразу, чтобы избежать повторного `bind`
-        this.#onMouseMoveHandler = this.#onMouseMove.bind(this);
-        this.#onMouseUpHandler = this.#onMouseUp.bind(this);
+        this.#onMouseMoveHandler  = this.#onMouseMove.bind(this);
+        this.#onMouseUpHandler    = this.#onMouseUp.bind(this);
         this.#onMouseLeaveHandler = this.#onMouseLeave.bind(this);
 
         LeverControl.#counter++;
         this.#id = LeverControl.#counter;
 
+        // Progress draw
+        this.setOnProgresDraw( (ctx, value, padding )=>{
+            const width = ctx.canvas.width;
+            const height = ctx.canvas.height;
+            //draw progress inside if color defined
+            if(this.progressColor!=""){
+                ctx.fillStyle = this.progressColor;
+                // Расчет высоты прямоугольника
+                const heightProgress = height * value;
+                const p = padding; 
+                ctx.fillRect(0 + p, height - heightProgress + p, width - 2*p, heightProgress - 2*p);
+            }
+        });
+
         this.init();
         if(value==-1){
-            this.value = 0;
+            this.#value = 0;
+            this.#valueOld = 0;
         } else{
             this.setValue(value);
         }
+
+
         
     }
     // Инициализация события
@@ -122,7 +146,7 @@ class LeverControl {
 
     // Уведомление слушателей
     notifyListeners() {
-        this.listeners.forEach(listener => listener(this.#value));
+        this.listeners.forEach(listener => listener(this.#value, this.#valueOld));
     }
 
     // Приватный метод для установки угла
@@ -177,15 +201,16 @@ class LeverControl {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                //draw progress inside if color defined
-        if(this.progressColor!=""){
-            ctx.fillStyle = this.progressColor;
-            // Расчет высоты прямоугольника
-            const height = canvas.height * this.#value;
-            const p = this.#progressPadding
-            ctx.fillRect(0 + p, canvas.height - height + p, size - 2*p, height - 2*p);
+        // //draw progress inside if color defined
+        // if(this.progressColor!=""){
+        //     ctx.fillStyle = this.progressColor;
+        //     // Расчет высоты прямоугольника
+        //     const height = canvas.height * this.#value;
+        //     const p = this.#progressPadding
+        //     ctx.fillRect(0 + p, canvas.height - height + p, size - 2*p, height - 2*p);
+        // }
 
-        }
+        this._onProgressDraw(ctx, this.#value, this.#progressPadding);
 
         // Линия
         ctx.beginPath();
@@ -207,6 +232,7 @@ class LeverControl {
         ctx.arc(x0, y0, 10, 0, 2 * Math.PI);
         ctx.fillStyle = 'yellow';
         ctx.fill();
+        ctx.stroke();
 
         // Textes: Title and procent of progress
         //const rect = this.canvas.getBoundingClientRect();

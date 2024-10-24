@@ -36,6 +36,7 @@ buttonAnimate.addEventListener('click', function () {
  */
 
 
+
 //----------------------------------------------------------------------------------------------- Класс для управления пакетами анимаций
 class AnimatedBatch {
     renderListners = [];
@@ -43,7 +44,7 @@ class AnimatedBatch {
     constructor(canvas) {
         this.ctx = canvas.getContext('2d');
         this.shapes = [];
-        this.shapesBuffer = [];
+
         this.isAnimating = false;
 
         this.previousTime = performance.now();
@@ -51,13 +52,12 @@ class AnimatedBatch {
     }
 
     add(...items) {
-        this.shapesBuffer.push(...items);
+        this.shapes.push(...items);
         // console.log(`--- After Adding animatedItem ${this.shapes.length}`);
         // this.itemsToString() ;
     }
     clear(){
         this.shapes = [];
-        this.shapesBuffer = [];
     }
 
     setOnBeforeAnimate(callback){
@@ -66,20 +66,12 @@ class AnimatedBatch {
 
     //Method to animate batch of shapes
     #render(currentTime) {
-        if(this.shapesBuffer.length > 0){
-            console.log(`${this.shapesBuffer.toString()}`);
-            // Переносим элементы из буфера в основной массив
-            this.shapes.push(...this.shapesBuffer);
-
-            // Очищаем буфер
-            this.shapesBuffer = [];
-        }
 
         // Stop the animation if all lists are empty
-        if (this.shapes.length <= 0 && this.shapesBuffer.length <= 0) {
-            this.isPlaying = false;
-            this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (this.shapes.length <= 0 ) {
+            this.stop();
             console.log(`#  Finished:  AnimatedBatch: shapes: ${this.shapes} length: ${this.shapes.length}`);
+            return;
         }
 
         this.delta_ms = currentTime - this.previousTime;
@@ -92,26 +84,39 @@ class AnimatedBatch {
 
         console.log(`--- Before filtering ${this.shapes.length}`);
         this.itemsToString() ;
-        this.shapes = this.shapes.filter((item) => {
-            item.draw(this.delta_ms);
-            return item.isAlive; 
-        });
+        // EDIT Modify the existing array, must work from end to beginning
+        for( let next = this.shapes.length - 1; next >= 0; --next )  {
+
+            // Then remove it if it's finished it's itterations
+            if( !this.shapes[next].isAlive ){
+                this.shapes.splice(next, 1)
+            } 
+            else{
+                this.shapes[next].draw( this.delta_ms )
+            }
+            
+          }
         console.log(`--- After filtering ${this.shapes.length}`);
         this.itemsToString() ;
-
-        if (this.isAnimating) {
+        
+        if(this.isAnimating){
             this.requestId = requestAnimationFrame((currentTime) => this.#render(currentTime));
-        } 
+        }
     }
 
     start(){
         this.isAnimating = true;
         this.#render(performance.now());
     }
+    pause(){
+        this.isAnimating = false;
+    }
 
     stop(){
-        cancelAnimationFrame(this.requestId);
+        //cancelAnimationFrame(this.requestId);
         this.isAnimating = false;
+        this.shapes = [];
+        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     // Extract animatedItems of certain type 
@@ -128,8 +133,6 @@ class AnimatedBatch {
         console.log(str);
         return str;
     }
-    
-
 }
 
 
