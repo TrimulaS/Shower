@@ -158,8 +158,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
  
-    let redVolume = 0
-    let blueVolume = 0
+
     const controllerSize = 400
 
     //Jets
@@ -176,6 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const spikeLength = 5
     
     //--------------------------------------------------------------------------------------------------------Controls
+    let colorCold = 'yellow'
+    let colorHot = 'blue' 
+    let red    = 0
+    let blue   = 0
+    let volumeHot = 0
+    let volumeCold = 0
+
 
     const container2D_1 = document.getElementById('leverContainer2D-1');
     const lever2D_1 = new LeverControl2D(container2D_1, 0 ,0.31, "Common Faucet","", controllerSize);
@@ -226,10 +232,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+        // If full blend replace with rose rectangle
         if(value == 1) {
             ctx.fillStyle = 'rgb(255,0,255)';
             ctx.fillRect(p,p, w, h);
         }
+
+        // Update secton faucet
+        if(lever2D_1)lever2D_1.draw()
+        
     });
 
 
@@ -290,11 +301,47 @@ document.addEventListener('DOMContentLoaded', () => {
     //     }
     // });
     //---------------------------------------------------------------------------------------Levarage 2D
+
+
+    // this._onProgressDraw(ctx, this.#value, this.#valueOld, this.#value2, this.#value2Old, this.#progressPadding);
+
+    lever2D_1.setOnProgresDraw( (ctx, valuAngle, valueAngleOld, valueApmlitude, valueApmlitudeOld, p)=>{
+
+        const canvas = ctx.canvas;
+        const width  = canvas.width
+
+        volumeCold = valuAngle > 0.5 ? 2 * (1 - valuAngle) : 1
+        volumeHot =  valuAngle < 0.5 ? valuAngle * 2       : 1
+        
+        volumeHot  *= valueApmlitude
+        volumeCold *= valueApmlitude
+        
+        const contrast  = leverContrast.getValue()
+        const volume1 = volumeCold * 0.5 * (1 + contrast) + volumeHot * 0.5 * (1 - contrast)
+        const volume2 = volumeCold * 0.5 * (1 - contrast) + volumeHot * 0.5 * (1 + contrast)
+
+        const height1 = ( canvas.height - 2*p ) * volume1          
+        const height2 = ( canvas.height - 2*p ) * volume2
+ 
+        colorCold = `rgb(${255 * (1 - contrast)}, 0,   255                  )`;
+        colorHot  = `rgb(  255                  , 0, ${255 * (1 - contrast)})`;   
+
+        //console.log(`w ${width}  h: ${height} c1 ${colorCold}  c2 ${colorHot}`);
+
+        ctx.fillStyle = colorCold;
+        ctx.fillRect(0 + p   , canvas.height - p - height1, width/2 - p, height1);
+        ctx.fillStyle = colorHot;
+        ctx.fillRect(width/2 , canvas.height - p - height2, width/2 - p, height2);  //(left, up, width, height)
+
+        //ctx.fillRect(i * rectWidth + p, j * rectHeight + p, rectWidth, rectHeight);
+
+
+    });
+
     lever2D_1.addListener((newValue, newValue2) => {
         for (let i=0; i<numOfJets; i++){
             let volume = 0;
-            let red    = 0;
-            let blue   = 0;
+
             let color  = 0;
 
             // if (i % 2 === 0) {
@@ -316,8 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
             blue =  newValue < 0.5 ? 255 : Math.round(255 * (2 - newValue*2 ));     
             color = `rgb(${red}, 0, ${blue})`;
 
-            redVolume = red;
-            blueVolume = blue;
 
             jets[i].setColor(color); 
             lever2D_1.progressColor = color;
@@ -327,13 +372,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const threshold = 0.02;
         }
+
     });
     lever2D_1.setValues(0.5, 0.5);
 
-    // Progress draw - main (2 separate rectangles)
-    function drawProgressLeaver2D(){
-
-    }
 
 
     //Stars

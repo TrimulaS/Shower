@@ -34,7 +34,7 @@ class LeverControl {
     static #scrollDelta = 2;   // in degrees
     static #counter = 0;
     #id = -1;
-    #progressPadding = 2;
+    progressPadding = 10;
     
     #value = 0.0; // Initial value from 0.0 to 1.0
     #valueOld = 0.0; // Initial value from 0.0 to 1.0
@@ -245,7 +245,7 @@ class LeverControl {
         //     ctx.fillRect(0 + p, canvas.height - height + p, size - 2*p, height - 2*p);
         // }
 
-        this._onProgressDraw(ctx, this.#value, this.#valueOld, this.#progressPadding);
+        this._onProgressDraw(ctx, this.#value, this.#valueOld, this.progressPadding);
 
         // Линия
         ctx.beginPath();

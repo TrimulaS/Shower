@@ -35,7 +35,7 @@ class LeverControl2D {
     static #scrollDeltaRadius = 0.02;   
     static #counter = 0;
     #id = -1;
-    #progressPadding = 2;
+    progressPadding = 10;
     
     #value = 0.0; // Initial value from 0.0 to 1.0   -  related to angle
     #valueOld = 0.0; // Initial value from 0.0 to 1.0
@@ -153,12 +153,12 @@ class LeverControl2D {
         this.#id = LeverControl2D.#counter;
 
         // Progress draw
-        this.setOnProgresDraw( (ctx, value, padding )=>{
+        this.setOnProgresDraw( (ctx, value, valueOld,value2,Value2Old, padding )=>{
             const progressHeight = this.#value2;
-            const progressWidth  = 1;
+            const progressWidth  = 1;         // in case where width display angle: this.#value;
     
             if(this.progressColor!=""){
-                const p = this.#progressPadding;
+                const p = padding;
     
                 ctx.fillStyle = this.progressColor;
                 // Расчет высоты прямоугольника
@@ -303,7 +303,7 @@ class LeverControl2D {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        this._onProgressDraw(ctx, this.#value, this.#valueOld, this.#value2, this.#value2Old, this.#progressPadding);
+        this._onProgressDraw(ctx, this.#value, this.#valueOld, this.#value2, this.#value2Old, this.progressPadding);
 
         // Draw progress inside if color defined
         // const progressHeight = this.#value;
