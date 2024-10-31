@@ -166,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const jetHeight = 720
     const jetDistance = 30
     const numOfJets = 40
+    const jetLengthConstPart = 20;
 
     //Stars
     const maxNumOfStars = 30
@@ -175,8 +176,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const spikeLength = 5
     
     //--------------------------------------------------------------------------------------------------------Controls
-    let colorCold = 'yellow'
-    let colorHot = 'blue' 
+    let colorCold = 'blue' 
+    let colorHot = 'yellow'
     let red    = 0
     let blue   = 0
     let volumeHot = 0
@@ -304,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // this._onProgressDraw(ctx, this.#value, this.#valueOld, this.#value2, this.#value2Old, this.#progressPadding);
-
+    //---------------------------------------------------------------------------------------------------------Jets & bars parameners
     lever2D_1.setOnProgresDraw( (ctx, valuAngle, valueAngleOld, valueApmlitude, valueApmlitudeOld, p)=>{
 
         const canvas = ctx.canvas;
@@ -335,43 +336,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         //ctx.fillRect(i * rectWidth + p, j * rectHeight + p, rectWidth, rectHeight);
 
+        if (animatedBatch.isAnimating){
+            for (let i=0; i<numOfJets; i++){
 
+            if (i % 2 === 0) {
+                jets[i].setColor(colorCold);
+                jets[i].setWidth(jetWidth * volume1);
+                jets[i].jetLengthConstPart = jetLengthConstPart * volume1 ;
+            }
+            else{
+                jets[i].setColor(colorHot);
+                jets[i].setWidth(jetWidth * volume2);
+                jets[i].jetLengthConstPart = jetLengthConstPart * volume2 ;
+            }
+
+            jets[i].setSpeed(valueApmlitude * 0.5 + 0.1);        // value chosen empiricaly
+
+            }
+        }
     });
 
+
     lever2D_1.addListener((newValue, newValue2) => {
-        for (let i=0; i<numOfJets; i++){
-            let volume = 0;
 
-            let color  = 0;
-
-            // if (i % 2 === 0) {
-
-            //     red  =  Math.round(255 * (     newValue) * newValue2 ); 
-            //     blue =  Math.round(255 * (1 - newValue ) * newValue2 );   
-
-            //     // Speed
-            //     // jets[i].
-
-            // }
-            // else{
-            //     red  =  0;
-            //     blue =  0;
-
-            // }
-
-            red  =  newValue < 0.5 ? Math.round(255 * newValue * 2): 255; 
-            blue =  newValue < 0.5 ? 255 : Math.round(255 * (2 - newValue*2 ));     
-            color = `rgb(${red}, 0, ${blue})`;
-
-
-            jets[i].setColor(color); 
-            lever2D_1.progressColor = color;
-
-            jets[i].setWidth(newValue2 * jetWidth);
-            jets[i].setSpeed(newValue2 * 0.5 + 0.1);        // value chosen empiricaly
-
-            const threshold = 0.02;
-        }
 
     });
     lever2D_1.setValues(0.5, 0.5);
