@@ -5,30 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shower</title>
     <style>
+        body {
+            font: 16px Verdana, sans-serif;
+        }
 
         .viewport{
             border: 1px solid rgb(200, 200, 255);
             /* Display */
             width  : 1282px;
             height : 722px;
-            padding: 1px;
+            padding: 5px;
+            /* gap: 5px; */
         }
         .indent{
             /* width: 400px; */
             height: fit-content;
             background-color: rgb(220, 253, 240);
         }
+        .tool-bar{
+            display: flex;
+            padding: 5px;
+            gap:5px;
+        }
         canvas {
             border: 1px solid black;
             /* width : 640;
             height: 720; */
         }
-        .middle{
+        .space-side{
+            flex-grow: 1;
+            size: 20px;
+            background-color: lightgoldenrodyellow;
+        }
+        .space-middle{
             flex-grow: 1;
             background-color: lightgray;
         }
         .faucet-conainer{
-            display: flex; justify-self: center; align-self: center;
+            display: flex; 
+            /* justify-self: center; 
+            align-self: center; */
+            gap:5px;
         }
 
         /* Anisothermal*/
@@ -63,6 +80,7 @@
             border-bottom: 1px solid #ddd;
         }
         .embossed2, .button{
+            font: 16px Verdana;
             background-color:        #eee;
             border-left:   2px solid #fff;
             border-top:    2px solid #fff;
@@ -79,20 +97,20 @@
     <div style = "display: flex;    flex-direction: column; ">
 
         <div style = "display: flex;    flex-direction: row; ">
-            
+            <div class="space-side"></div>
             <div>
                 <!-- Water -->
                 <canvas id="canvas-water" width = '720' height = '720'></canvas>
             </div>
-            <div class="middle"></div>
-            <div class="faucet-conainer" style = "display: flex;    flex-direction: column; ">
-                <div>
-                    <div><input type="checkbox" id="startAnimation"> Start Animation</div>
+            <div class = "space-middle"></div>
+            <div class = "faucet-conainer" style = "display: flex;    flex-direction: column; ">
+                <div  class="tool-bar">
+                    <!-- <div><input type="checkbox" id="startAnimation">Animation</div> -->
                     <label>
-                        <input type="radio" class="radio-button" name="faucet-type" value="common" checked> Common
+                        <input type="radio" class="radio-button" name="faucet-type" value="common" > Common
                     </label>
                     <label>
-                        <input type="radio" class="radio-button"  name="faucet-type" value="anisothermal"> 
+                        <input type="radio" class="radio-button"  name="faucet-type" value="anisothermal" checked> 
                            <span class="blue">A</span><!--
                         --><span class="blue">i</span><!--
                         --><span class="red" >n</span><!--
@@ -120,11 +138,13 @@
 
                 <!-- <div id="divSpeed"></div> -->
             </div>
-            <div class = 'indent'></div>
+            <div class="space-side"></div>
+            <!-- <div class = 'indent'></div> -->
         </div>
     </div>
 </div>
 
+<!-- <link href='https://fonts.googleapis.com/css?family=Agdasima' rel='stylesheet'> -->
 
 <script src="js/leverControl.js"></script>
 <script src="js/waterJet.js"></script> 
@@ -135,7 +155,7 @@
 
 <script>
 
-// Example of creating multiple lever controls on a page
+
 document.addEventListener('DOMContentLoaded', () => {
  
     let redVolume = 0
@@ -151,14 +171,15 @@ document.addEventListener('DOMContentLoaded', () => {
     //Stars
     const maxNumOfStars = 30
     const starHeightDelta = 10
-    const starShine = 400;       //ms
-    const starFade  = 400;        //ms
+    const starShine = 400       //ms
+    const starFade  = 400        //ms
     const spikeLength = 5
     
     //--------------------------------------------------------------------------------------------------------Controls
 
     const container2D_1 = document.getElementById('leverContainer2D-1');
     const lever2D_1 = new LeverControl2D(container2D_1, 0 ,0.31, "Common Faucet","", controllerSize);
+    lever2D_1.ctx.font = '16px Verdana';
 
     const divFps = document.getElementById('div-fps')
     const buttonStart = document.getElementById('button-start')
@@ -169,8 +190,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const leverContainerContrast = document.getElementById('leverContainerContrast');
     // (container, value = -1, title = "", progressColor = "", size = 150)
     const leverContrast = new LeverControl(leverContainerContrast, 0, 'Contrast', '',controllerSize);
+    leverContrast.ctx.font = '16px Verdana';
     
-    // Progress draw
+    // Progress draw - contrast
     leverContrast.setOnProgresDraw( (ctx, valueOrigin, valueOld, p)=>{
 
         const value = 1 - valueOrigin;      // To revert value 
@@ -239,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Animation
     const animatedBatch = new AnimatedBatch(canvas);
     const ctx = animatedBatch.ctx;
+  
 
     const animatedItem1 = new AnimatedItem(() => {
         divFps.textContent = `FPS: ${Math.round(1000 / animatedBatch.delta_ms)}`;
@@ -256,29 +279,42 @@ document.addEventListener('DOMContentLoaded', () => {
         jets.push(jet);
     }
 
-    const checkbox = document.getElementById('startAnimation');
+    // const checkbox = document.getElementById('startAnimation');
     
-    checkbox.addEventListener('change', (e) => {
-        if(checkbox.checked){
-            animatedBatch.start();
-        }
-        else {
-            animatedBatch.stop();
-        }
-    });
+    // checkbox.addEventListener('change', (e) => {
+    //     if(checkbox.checked){
+    //         animatedBatch.start();
+    //     }
+    //     else {
+    //         animatedBatch.stop();
+    //     }
+    // });
     //---------------------------------------------------------------------------------------Levarage 2D
     lever2D_1.addListener((newValue, newValue2) => {
         for (let i=0; i<numOfJets; i++){
-            if (i % 2 === 0) {
+            let volume = 0;
+            let red    = 0;
+            let blue   = 0;
+            let color  = 0;
 
-            }
-            else{
+            // if (i % 2 === 0) {
 
-            }
+            //     red  =  Math.round(255 * (     newValue) * newValue2 ); 
+            //     blue =  Math.round(255 * (1 - newValue ) * newValue2 );   
 
-            const red  =  newValue < 0.5 ? Math.round(255 * newValue * 2): 255; 
-            const blue =  newValue < 0.5 ? 255 : Math.round(255 * (2 - newValue*2 ));     
-            const color = `rgb(${red}, 0, ${blue})`;
+            //     // Speed
+            //     // jets[i].
+
+            // }
+            // else{
+            //     red  =  0;
+            //     blue =  0;
+
+            // }
+
+            red  =  newValue < 0.5 ? Math.round(255 * newValue * 2): 255; 
+            blue =  newValue < 0.5 ? 255 : Math.round(255 * (2 - newValue*2 ));     
+            color = `rgb(${red}, 0, ${blue})`;
 
             redVolume = red;
             blueVolume = blue;
@@ -293,6 +329,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     lever2D_1.setValues(0.5, 0.5);
+
+    // Progress draw - main (2 separate rectangles)
+    function drawProgressLeaver2D(){
+
+    }
+
 
     //Stars
     // redVolume = getRedFromColor(jets[0].color);

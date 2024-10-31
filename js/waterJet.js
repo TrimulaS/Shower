@@ -5,15 +5,8 @@
 class WaterJet {
     static count = 0;
 
-    jetLengthConstPart = 10;
-    jetLengthVariablePart = 30;
-    jetSpaceConstPart = 2;
-    jetSpaceVariablePart = 7;
-    jetSpace = 0;
-
     // Listener jet drop gone:
     OnJetOutOfBorderCallBack = null;
-
 
     constructor(ctx, left, top, levelUp = 20, levelDown = 500, speed = 0.1, color = 'blue', width = 5) {
         this.ctx = ctx;    
@@ -24,6 +17,12 @@ class WaterJet {
         this.speed = speed;             // pixel per ms 
         this.color = color;
         this.width = width;
+
+        this.jetLengthConstPart = 10;
+        this.jetLengthVariablePart = 30;
+        this.jetSpaceConstPart = 2;
+        this.jetSpaceVariablePart = 7;
+        this.jetSpace = 0;
 
         this.rectangles = [];
         this.lastTime = 0;

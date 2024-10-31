@@ -117,6 +117,7 @@ class LeverControl {
         this.canvas.width = this.size;
         this.canvas.height = this.size / 1.5;
         this.ctx = this.canvas.getContext('2d');
+        this.ctx.font = '16px Arial';
         // Handle
         this.lineLength = this.size / 2.5;
         this.circleRadius = this.size / 15;    // handle circle
@@ -271,7 +272,7 @@ class LeverControl {
         // Textes: Title and procent of progress
         //const rect = this.canvas.getBoundingClientRect();
         const percentage = Math.round(100 - (this.#angle / Math.PI) * 100);
-        ctx.font = '16px Arial';
+
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
 

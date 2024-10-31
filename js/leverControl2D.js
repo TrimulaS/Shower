@@ -38,9 +38,11 @@ class LeverControl2D {
     #progressPadding = 2;
     
     #value = 0.0; // Initial value from 0.0 to 1.0   -  related to angle
+    #valueOld = 0.0; // Initial value from 0.0 to 1.0
     #angle = Math.PI; // initial angle (in radians)
 
     #value2 = 0.0; // Initial value from 0.0 to 1.0     - related to radius-vector
+    #value2Old = 0.0; // Initial value from 0.0 to 1.0
     #radius = 1.0;
     #handleX = 0;
     #handleY = 0;
@@ -112,6 +114,12 @@ class LeverControl2D {
     #onMouseLeave(){
     
     }
+
+    setOnProgresDraw(callback){
+        this._onProgressDraw = callback;
+        // re-draw after progress bar render changed
+        this.draw();
+    }
     
 
     //----------------------------------------------------------------------------------------------------Constructor
@@ -126,6 +134,7 @@ class LeverControl2D {
         this.canvas.width = this.size;
         this.canvas.height = this.size / 1.7;
         this.ctx = this.canvas.getContext('2d');
+        this.ctx.font = '16px Arial';
         // Handle
         this.lineLength = this.size / 2.5;
         this.circleRadius = this.size / 15;    // handle circle
@@ -143,9 +152,30 @@ class LeverControl2D {
         LeverControl2D.#counter++;
         this.#id = LeverControl2D.#counter;
 
+        // Progress draw
+        this.setOnProgresDraw( (ctx, value, padding )=>{
+            const progressHeight = this.#value2;
+            const progressWidth  = 1;
+    
+            if(this.progressColor!=""){
+                const p = this.#progressPadding;
+    
+                ctx.fillStyle = this.progressColor;
+                // Расчет высоты прямоугольника
+                const height = canvas.height * progressHeight;
+    
+                //Calculating narowing progress rectongle proportianllay to radius-vector value
+                const width = size * progressWidth;
+                const leftShift = size * (1 - progressWidth) / 2;
+                // console.log(`${width}  shift: ${leftShift}`);
+                ctx.fillRect(0 + p +leftShift, canvas.height - height + p, width - 2*p, height - 2*p);
+            }
+        });
+
         this.init();
         if(value ==-1){
-            this.value = 0;
+            this.#value = 0;
+            this.#valueOld = -1;
         } else{
             this.setValue(value);
             
@@ -153,7 +183,8 @@ class LeverControl2D {
 
         //TO DO: Define setValue
         if(value2 ==-1){
-            this.value2 = 0;
+            this.#value2 = 0;
+            this.#value2Old = -1;
         } else{
             this.setValue2(value2);
         }
@@ -178,7 +209,7 @@ class LeverControl2D {
 
     // Уведомление слушателей
     notifyListeners() {
-        this.listeners.forEach(listener => listener(this.#value, this.#value2));
+        this.listeners.forEach(listener => listener(this.#value,this.#valueOld, this.#value2, this.#value2Old,));
     }
 
     // Приватный метод для установки угла
@@ -205,6 +236,7 @@ class LeverControl2D {
     // Приватный метод для обновления значения
     #setValueInternal(newValue) {
         if (this.#value !== newValue) {
+            this.#valueOld = this.#value;
             this.#value = newValue;
             if(this.isListenerOn){
                 this.notifyListeners();
@@ -218,6 +250,7 @@ class LeverControl2D {
     #setValue2Internal(newValue2) {
         if (this.#value2 !== newValue2) {
             this.#radius = this.lineLength * newValue2;
+            this.#value2Old = this.#value2;
             this.#value2 = newValue2;
             if(this.isListenerOn){
                 this.notifyListeners();
@@ -257,6 +290,10 @@ class LeverControl2D {
         return this.#value;
     }
 
+    getValue2() {
+        return this.#value2;
+    }
+
     // Рендеринг элемента управления
     draw() {
         const { ctx, x0, y0, lineLength, circleRadius, size, canvas, left } = this;
@@ -266,25 +303,12 @@ class LeverControl2D {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        this._onProgressDraw(ctx, this.#value, this.#valueOld, this.#value2, this.#value2Old, this.#progressPadding);
+
         // Draw progress inside if color defined
         // const progressHeight = this.#value;
         // const progressWidth  = this.#value2;
-        const progressHeight = this.#value2;
-        const progressWidth  = 1;
 
-        if(this.progressColor!=""){
-            const p = this.#progressPadding;
-
-            ctx.fillStyle = this.progressColor;
-            // Расчет высоты прямоугольника
-            const height = canvas.height * progressHeight;
-
-            //Calculating narowing progress rectongle proportianllay to radius-vector value
-            const width = size * progressWidth;
-            const leftShift = size * (1 - progressWidth) / 2;
-            // console.log(`${width}  shift: ${leftShift}`);
-            ctx.fillRect(0 + p +leftShift, canvas.height - height + p, width - 2*p, height - 2*p);
-        }
 
         // Линия
         ctx.beginPath();
@@ -315,7 +339,7 @@ class LeverControl2D {
         const val2 = Math.round(this.#value2 * 100);
 
         
-        ctx.font = '16px Arial';
+
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
 
