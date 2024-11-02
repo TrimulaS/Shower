@@ -35,7 +35,7 @@ class LeverControl2D {
     static #scrollDeltaRadius = 0.02;   
     static #counter = 0;
     #id = -1;
-    progressPadding = 10;
+    progressPadding = 1;
     
     #value = 0.0; // Initial value from 0.0 to 1.0   -  related to angle
     #valueOld = 0.0; // Initial value from 0.0 to 1.0
@@ -134,7 +134,10 @@ class LeverControl2D {
         this.canvas.width = this.size;
         this.canvas.height = this.size / 1.7;
         this.ctx = this.canvas.getContext('2d');
-        this.ctx.font = '16px Arial';
+        
+        this.textStyle = "normal 16px Arial";
+        this.textStyleTitle = "bold 16px Arial";
+        this.ctx.font = this.textStyle;
         // Handle
         this.lineLength = this.size / 2.5;
         this.circleRadius = this.size / 15;    // handle circle
@@ -357,10 +360,12 @@ class LeverControl2D {
 
 
         if(this.title != "") {                               //If no title - than procent will be as title 
+            
+            ctx.font = this.textStyleTitle;
+            ctx.strokeText(`${this.title}`      , x0, y0 / 2 - 20);
+            ctx.fillText  (`${this.title}`      , x0, y0 / 2 - 20);
 
-            ctx.strokeText(`${this.title}`      , x0, y0 / 2 - 18);
-            ctx.fillText  (`${this.title}`      , x0, y0 / 2 - 18);
-
+            ctx.font = this.textStyle;
             ctx.strokeText(`temperature : ${percentage}%` , x0, y0 / 2);  //  ctx.strokeText(`α : ${percentage}%` , x0, y0 / 2);
             ctx.fillText  (`temperature : ${percentage}%` , x0, y0 / 2);  //  ctx.fillText  (`α : ${percentage}%` , x0, y0 / 2);
 

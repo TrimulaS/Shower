@@ -10,7 +10,7 @@
         }
 
         .viewport{
-            border: 1px solid rgb(200, 200, 255);
+            /* border: 1px solid rgb(200, 200, 255); */
             /* Display */
             width  : 1282px;
             height : 722px;
@@ -20,35 +20,38 @@
         .indent{
             /* width: 400px; */
             height: fit-content;
-            background-color: rgb(220, 253, 240);
+            /* background-color: rgb(220, 253, 240); */
         }
         .tool-bar{
             display: flex;
             padding: 5px;
             gap:5px;
         }
-        canvas {
-            border: 1px solid black;
-            /* width : 640;
-            height: 720; */
-        }
+        /* canvas {
+            border: 1px solid black; 
+             width : 640;
+            height: 720;
+        } */
         .space-side{
             flex-grow: 1;
             size: 20px;
-            background-color: lightgoldenrodyellow;
+            /* background-color: lightgoldenrodyellow; */
         }
         .space-middle{
             flex-grow: 1;
-            background-color: lightgray;
+            /* background-color: lightgray; */
         }
-        .faucet-conainer{
+        .lever-column{
             display: flex; 
             /* justify-self: center; 
             align-self: center; */
             gap:5px;
         }
 
-        /* Anisothermal*/
+        .lever-container{
+            border: solid 1px lightblue;
+        }
+        /* Anisothermal radiobutton text*/
         .blue {
             color: blue;
             white-space: nowrap;
@@ -57,6 +60,39 @@
             color: red;
             white-space: nowrap;
         }
+
+
+        /* Общие стили для кругов */
+        #symbol-full-mix,
+        #symbol-full-contrast,
+        #symbol-cold,
+        #symbol-hot  {
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 50%;
+        }
+
+        /* Розовый круг для symbol-full-mix */
+        #symbol-full-mix {
+            background-color: rgb(255, 0, 255);
+        }
+        /* Розовый круг для symbol-full-mix */
+        #symbol-cold {
+            background-color: blue;
+        }
+        /* Розовый круг для symbol-full-mix */
+        #symbol-hot {
+            background-color:red;
+        }
+
+
+        /* Круг с градиентом для symbol-full-contrast */
+        #symbol-full-contrast {
+            background: linear-gradient(to right, red 50%, blue 50%);
+            border-left: 1px solid black; /* Центральная черная линия */
+        }
+
 
         /* Buttons */
         .button{
@@ -103,9 +139,9 @@
                 <canvas id="canvas-water" width = '720' height = '720'></canvas>
             </div>
             <div class = "space-middle"></div>
-            <div class = "faucet-conainer" style = "display: flex;    flex-direction: column; ">
+            <div class = "lever-column" style = "display: flex;    flex-direction: column; gap: 10px;">
                 <div  class="tool-bar">
-                    <!-- <div><input type="checkbox" id="startAnimation">Animation</div> -->
+                    <div><input type="checkbox" id="cb-dynamic">Dynamic</div>
                     <label>
                         <input type="radio" class="radio-button" name="faucet-type" value="common" > Common
                     </label>
@@ -126,14 +162,21 @@
                         --><span class="red" >l</span>
                     </label>
                 </div>
-                
-                <div class = 'faucet' id="leverContainerContrast"></div>
-                <div class = 'faucet' id="leverContainer2D-1"></div>
-                <div id = 'div-fps' class = 'indent'> ? </div>
-                <div style="display: flex; direction: row; gap: 3px;">
+                <div style="display: flex; flex-direction: row; align-items: flex-end; gap: 5px;">
+                    <div id="symbol-full-mix"></div>
+                    <div class="lever-container" id="leverContainerContrast"></div>
+                    <div id="symbol-full-contrast"></div>
+                </div>
+                <div style="display: flex; flex-direction: row; align-items: flex-end; gap: 5px;">
+                    <div id="symbol-cold"></div>
+                    <div class = 'lever-container' id="leverContainer2D-1"></div>
+                    <div id="symbol-hot"></div>
+                </div>
+                <div id = 'div-fps' class = 'indent' style="display: none;"> ? </div>                                <!--     temporary -->
+                <div style="display: flex; direction: row;  gap: 3px;">
                     <button id = 'button-start' class = 'button'>Start</button>
                     <button id = 'button-stop' class = 'button'>Stop</button>
-                    <button id = 'button-do' class = 'button'>Add star</button>
+                    <button id = 'button-do' class = 'button' style="display: none;">Add star</button>                               <!--     temporary -->
                 </div>
 
                 <!-- <div id="divSpeed"></div> -->
@@ -166,7 +209,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const jetHeight = 720
     const jetDistance = 30
     const numOfJets = 40
-    const jetLengthConstPart = 20;
+    const jetLengthVariablePart = 20
+    const jetSpaceVariablePart = 10
+    const speedCoefficient = 0.3
+    const jetSwitchCountMax = 2
+    let invert = false
 
     //Stars
     const maxNumOfStars = 30
@@ -204,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const value = 1 - valueOrigin;      // To revert value 
         const w = ctx.canvas.width - 2 * p;
-        const h = ctx.canvas.height - 2 * p;
+        const h = ctx.canvas.height// - 2 * p;
         const hSubtract = 1;
 
         // Минимальное и максимальное количество делений
@@ -262,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         break;
                     default:
                         console.log(`Wrong radioButton value ${event.target.checked}.`);
-                    }
+                }
 
             }
         });
@@ -291,10 +338,10 @@ document.addEventListener('DOMContentLoaded', () => {
         jets.push(jet);
     }
 
-    // const checkbox = document.getElementById('startAnimation');
+    const cbDynamic = document.getElementById('cb-dynamic');
     
-    // checkbox.addEventListener('change', (e) => {
-    //     if(checkbox.checked){
+    // cbDynamic.addEventListener('change', (e) => {
+    //     if(cbDynamic.checked){
     //         animatedBatch.start();
     //     }
     //     else {
@@ -306,6 +353,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // this._onProgressDraw(ctx, this.#value, this.#valueOld, this.#value2, this.#value2Old, this.#progressPadding);
     //---------------------------------------------------------------------------------------------------------Jets & bars parameners
+    let jetSwitchCount = 0;         // Counter to switch one jet between conld and hot
+
     lever2D_1.setOnProgresDraw( (ctx, valuAngle, valueAngleOld, valueApmlitude, valueApmlitudeOld, p)=>{
 
         const canvas = ctx.canvas;
@@ -323,11 +372,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const height1 = ( canvas.height - 2*p ) * volume1          
         const height2 = ( canvas.height - 2*p ) * volume2
- 
-        colorCold = `rgb(${255 * (1 - contrast)}, 0,   255                  )`;
-        colorHot  = `rgb(  255                  , 0, ${255 * (1 - contrast)})`;   
 
-        //console.log(`w ${width}  h: ${height} c1 ${colorCold}  c2 ${colorHot}`);
+        const mixPart = 0.5 * ( 1 - contrast)           // 0.5...0 portion of color to blend if contrast less than 1
+        //console.log(`mixPart ${mixPart} `)
+ 
+
+        if(volumeCold >= volumeHot){                             // Blue is greater thn red  ( 0, 0, 255 )
+            const lessColorMax = 255 * volumeHot / volumeCold
+            const Rc = lessColorMax * (1 - contrast)
+            const Rh = lessColorMax +(255 - lessColorMax) * contrast
+            const Bc = 255
+            const Bh = 255 * (1 -contrast)
+            colorCold = `rgb(  ${Rc}  , 0,   ${Bc} )`;
+            colorHot  = `rgb(  ${Rh } , 0,   ${Bh} )`; 
+            // console.log(`( ${Rc}, ${Bc})  ( ${Rh}, ${Bh})   blue: 255  red: ${lessColorMax}`)
+
+        } else{                                              // Red is greater thn blue  ( 255, 0, 0 )
+            const lessColorMax = 255 * volumeCold / volumeHot
+            const Rc = 255 * (1 -contrast)     
+            const Rh = 255                              
+            const Bc =  lessColorMax +(255 - lessColorMax) * contrast
+            const Bh = lessColorMax * (1 - contrast)    //255 * (1 -contrast)
+            colorCold = `rgb(  ${Rc}  , 0,   ${Bc} )`;
+            colorHot  = `rgb(  ${Rh } , 0,   ${Bh} )`; 
+            // console.log(`( ${Rc}, ${Bc})  ( ${Rh}, ${Bh})   red:  255 blue: ${lessColorMax}`)
+
+        }
+
 
         ctx.fillStyle = colorCold;
         ctx.fillRect(0 + p   , canvas.height - p - height1, width/2 - p, height1);
@@ -336,21 +407,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         //ctx.fillRect(i * rectWidth + p, j * rectHeight + p, rectWidth, rectHeight);
 
+        //Dynamic - invert isEven after repating jetSwitchCountMax
+        jetSwitchCount ++
+        let isEven = i % 2
+
+        if( cbDynamic.checked && jetSwitchCount > jetSwitchCountMax ){
+            jetSwitchCount = 0
+            invert = ! invert
+        }
+        isEven = invert ? !isEven : isEven;  // Инвертируем isEven, если invert = true
+
         if (animatedBatch.isAnimating){
             for (let i=0; i<numOfJets; i++){
 
-            if (i % 2 === 0) {
+            if ( isEven === 0 ) {
                 jets[i].setColor(colorCold);
                 jets[i].setWidth(jetWidth * volume1);
-                jets[i].jetLengthConstPart = jetLengthConstPart * volume1 ;
+                jets[i].jetLengthVariablePart = jetLengthVariablePart * 5 *volume1 ;
+                jets[i].jetSpaceVariablePart = jetSpaceVariablePart /(0.1 + volume1);
+                // console.log(jets[i].jetSpaceVariablePart )
             }
             else{
                 jets[i].setColor(colorHot);
                 jets[i].setWidth(jetWidth * volume2);
-                jets[i].jetLengthConstPart = jetLengthConstPart * volume2 ;
+                jets[i].jetLengthVariablePart = jetLengthVariablePart * 5 *volume2 ;
+                jets[i].jetSpaceVariablePart = jetSpaceVariablePart /(0.1 + volume1);
             }
 
-            jets[i].setSpeed(valueApmlitude * 0.5 + 0.1);        // value chosen empiricaly
+            jets[i].setSpeed(valueApmlitude * speedCoefficient + 0.1);        // value chosen empiricaly
 
             }
         }

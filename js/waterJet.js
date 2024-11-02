@@ -20,7 +20,7 @@ class WaterJet {
 
         this.jetLengthConstPart = 10;
         this.jetLengthVariablePart = 30;
-        this.jetSpaceConstPart = 2;
+        this.jetSpaceConstPart = 1;
         this.jetSpaceVariablePart = 7;
         this.jetSpace = 0;
 
