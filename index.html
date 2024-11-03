@@ -9,7 +9,22 @@
             font: 16px Verdana, sans-serif;
         }
 
+        .hidden {
+            display: none;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: row;
+        }
+        .flex-col {
+            display: flex;
+            flex-direction: column;
+        }
+
         .viewport{
+            display: flex;
+            flex-direction: column;
             /* border: 1px solid rgb(200, 200, 255); */
             /* Display */
             width  : 1282px;
@@ -27,6 +42,14 @@
             padding: 5px;
             gap:5px;
         }
+
+        .block-lever {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+            gap: 5px;
+        }
+
         /* canvas {
             border: 1px solid black; 
              width : 640;
@@ -43,9 +66,10 @@
         }
         .lever-column{
             display: flex; 
+            flex-direction: column;
             /* justify-self: center; 
             align-self: center; */
-            gap:5px;
+            gap: 10px;
         }
 
         .lever-container{
@@ -62,7 +86,8 @@
         }
 
 
-        /* Общие стили для кругов */
+        
+        /* Decorating levers */
         #symbol-full-mix,
         #symbol-full-contrast,
         #symbol-cold,
@@ -71,6 +96,7 @@
             height: 20px;
             border: 1px solid black;
             border-radius: 50%;
+            align-self: flex-end; /* Принудительно выравнивать круги по нижнему краю */
         }
 
         /* Розовый круг для symbol-full-mix */
@@ -129,20 +155,18 @@
 <body>
 
 <!-- Faucet 2D -->
-<div class = 'viewport' style = "display: flex;    flex-direction: column; ">
+<div class = 'viewport'>
     <div style = "display: flex;    flex-direction: column; ">
 
-        <div style = "display: flex;    flex-direction: row; ">
+        <div class = 'flex-row'>
             <div class="space-side"></div>
             <div>
                 <!-- Water -->
                 <canvas id="canvas-water" width = '720' height = '720'></canvas>
             </div>
             <div class = "space-middle"></div>
-            <div class = "lever-column" style = "display: flex;    flex-direction: column; gap: 10px;">
-                
+            <div class = "lever-column">
                 <div  class="tool-bar">
-                    
                     <label>
                         <input type="radio" class="radio-button" name="faucet-type" value="common" > Common
                     </label>
@@ -163,19 +187,22 @@
                         --><span class="red" >l</span>
                     </label>
                 </div>
-                <div><input type="checkbox" id="cb-dynamic" checked>Dynamic</div>
-                <div id="block-lever-contrast" style="display: flex; flex-direction: row; align-items: flex-end; gap: 5px;">
+                <div id="cb-dynamic" class = 'flex-row'>
+                    <input type="checkbox" checked>
+                    Dynamic
+                </div>
+                <div id="block-lever-contrast" class = 'block-lever'>
                     <div id="symbol-full-mix"></div>
-                    <div class="lever-container" id="leverContainerContrast"></div>
+                    <div id="leverContainerContrast" class="lever-container" ></div>
                     <div id="symbol-full-contrast"></div>
                 </div>
-                <div style="display: flex; flex-direction: row; align-items: flex-end; gap: 5px;">
+                <div class = 'block-lever'>
                     <div id="symbol-cold"></div>
-                    <div class = 'lever-container' id="leverContainer2D-1"></div>
+                    <div id="leverContainer2D-1" class = 'lever-container'></div>
                     <div id="symbol-hot"></div>
                 </div>
                 <div id = 'div-fps' class = 'indent' style="display: none;"> ? </div>                                <!--     temporary -->
-                <div style="display: flex; direction: row;  gap: 3px;">
+                <div class = 'flex-row' style="gap: 3px;">
                     <button id = 'button-start' class = 'button'>Start</button>
                     <button id = 'button-stop' class = 'button'>Stop</button>
                     <button id = 'button-do' class = 'button' style="display: none;">Add star</button>                               <!--     temporary -->
@@ -319,12 +346,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (event.target.checked) {
                 switch (event.target.value) {
                     case 'common':
-                        blockLeverContrast.style.display = 'none';
+                        blockLeverContrast.classList = 'hidden';
                         cbDynamic.style.display = 'none'
                         leverContrast.setValue(0) 
                         break;
                     case 'anisothermal':
-                        blockLeverContrast.style.display = 'block';
+                        blockLeverContrast.classList = 'block-lever';
+                        // blockLeverContrast.class = 'hidden';
+                        // blockLeverContrast.style.visibility = 'visible';
                         cbDynamic.style.display = 'block'
                         break;
                     default:
