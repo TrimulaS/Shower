@@ -39,7 +39,9 @@ class WaterJet {
         return {
             x: this.left,
             y: this.levelUp - jetLength,
-            length: jetLength
+            length: jetLength,
+            color: this.color,
+            width: this.width,
         };
 
     }
@@ -85,10 +87,9 @@ class WaterJet {
             // console.log(`levelUp ${levelUp}   levelDown${levelDown}  visibleTop ${visibleTop}   visibleBottom${visibleBottom}`);
 
             if (visibleBottom > visibleTop) {
-                ctx.fillStyle = color;
-                ctx.fillRect(rect.x, visibleTop, width, visibleBottom - visibleTop);
+                ctx.fillStyle = rect.color;
+                ctx.fillRect(rect.x, visibleTop, rect.width, visibleBottom - visibleTop);            //ctx.fillRect(rect.x, visibleTop, width, visibleBottom - visibleTop);
                 // console.log(`- draw rect x: ${rect.x}  y ${visibleTop}   w ${width}  h ${visibleBottom - visibleTop}`);
-                
             }
         });
     }

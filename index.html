@@ -140,8 +140,9 @@
             </div>
             <div class = "space-middle"></div>
             <div class = "lever-column" style = "display: flex;    flex-direction: column; gap: 10px;">
+                
                 <div  class="tool-bar">
-                    <div><input type="checkbox" id="cb-dynamic">Dynamic</div>
+                    
                     <label>
                         <input type="radio" class="radio-button" name="faucet-type" value="common" > Common
                     </label>
@@ -162,7 +163,8 @@
                         --><span class="red" >l</span>
                     </label>
                 </div>
-                <div style="display: flex; flex-direction: row; align-items: flex-end; gap: 5px;">
+                <div><input type="checkbox" id="cb-dynamic" checked>Dynamic</div>
+                <div id="block-lever-contrast" style="display: flex; flex-direction: row; align-items: flex-end; gap: 5px;">
                     <div id="symbol-full-mix"></div>
                     <div class="lever-container" id="leverContainerContrast"></div>
                     <div id="symbol-full-contrast"></div>
@@ -212,8 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const jetLengthVariablePart = 20
     const jetSpaceVariablePart = 10
     const speedCoefficient = 0.3
-    const jetSwitchCountMax = 2
+    const jetSwitchCountMax = 50       // Switch between Cold Hot
     let invert = false
+    let volume1 = 0
+    let volume2 = 0
+    let valueApmlitude = 0
 
     //Stars
     const maxNumOfStars = 30
@@ -241,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttonDo = document.getElementById('button-do')
 
     // Cntrast Leverage
+    const blockLeverContrast = document.getElementById('block-lever-contrast')
     const leverContainerContrast = document.getElementById('leverContainerContrast');
     // (container, value = -1, title = "", progressColor = "", size = 150)
     const leverContrast = new LeverControl(leverContainerContrast, 0, 'Contrast', '',controllerSize);
@@ -295,34 +301,60 @@ document.addEventListener('DOMContentLoaded', () => {
     leverContrast.setValue(0) 
 
 
+    const cbDynamic = document.getElementById('cb-dynamic');
+    
+    // cbDynamic.addEventListener('change', (e) => {
+    //     if(cbDynamic.checked){
+    //         animatedBatch.start();
+    //     }
+    //     else {
+    //         animatedBatch.stop();
+    //     }
+    // });
+
+
 	const radioButtons1 = document.querySelectorAll('input[name="faucet-type"]');
     radioButtons1.forEach(radio => {
         radio.addEventListener('change', (event) => {
             if (event.target.checked) {
                 switch (event.target.value) {
                     case 'common':
-                        leverContainerContrast.style.display = 'none';
+                        blockLeverContrast.style.display = 'none';
+                        cbDynamic.style.display = 'none'
                         leverContrast.setValue(0) 
                         break;
                     case 'anisothermal':
-                        leverContainerContrast.style.display = 'block';
+                        blockLeverContrast.style.display = 'block';
+                        cbDynamic.style.display = 'block'
                         break;
                     default:
                         console.log(`Wrong radioButton value ${event.target.checked}.`);
                 }
-
             }
         });
     });
 
     canvas = document.getElementById('canvas-water');
 
-    // Animation
+    // Animation - 1. Change invert 2. Show FPS,
     const animatedBatch = new AnimatedBatch(canvas);
     const ctx = animatedBatch.ctx;
-  
 
     const animatedItem1 = new AnimatedItem(() => {
+        //1. Dynamic - invert isEven after repating 
+        if( cbDynamic.checked ){
+            jetSwitchCount ++
+
+            if(jetSwitchCount > jetSwitchCountMax ){
+                jetSwitchCount = 0
+                invert = ! invert
+                updateJetCOnfiguration()
+                // console.log(`invert`)
+            }
+        }
+
+
+        //2. Show FPS,
         divFps.textContent = `FPS: ${Math.round(1000 / animatedBatch.delta_ms)}`;
     }); // Без повторений, с постоянным обновлением
 
@@ -338,16 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
         jets.push(jet);
     }
 
-    const cbDynamic = document.getElementById('cb-dynamic');
-    
-    // cbDynamic.addEventListener('change', (e) => {
-    //     if(cbDynamic.checked){
-    //         animatedBatch.start();
-    //     }
-    //     else {
-    //         animatedBatch.stop();
-    //     }
-    // });
+
     //---------------------------------------------------------------------------------------Levarage 2D
 
 
@@ -355,20 +378,22 @@ document.addEventListener('DOMContentLoaded', () => {
     //---------------------------------------------------------------------------------------------------------Jets & bars parameners
     let jetSwitchCount = 0;         // Counter to switch one jet between conld and hot
 
-    lever2D_1.setOnProgresDraw( (ctx, valuAngle, valueAngleOld, valueApmlitude, valueApmlitudeOld, p)=>{
+    lever2D_1.setOnProgresDraw( (ctx, valuAngle, valueAngleOld, valApmlitude, valApmlitudeOld, p)=>{
 
         const canvas = ctx.canvas;
         const width  = canvas.width
 
         volumeCold = valuAngle > 0.5 ? 2 * (1 - valuAngle) : 1
         volumeHot =  valuAngle < 0.5 ? valuAngle * 2       : 1
+
+        valueApmlitude = valApmlitude
         
         volumeHot  *= valueApmlitude
         volumeCold *= valueApmlitude
         
         const contrast  = leverContrast.getValue()
-        const volume1 = volumeCold * 0.5 * (1 + contrast) + volumeHot * 0.5 * (1 - contrast)
-        const volume2 = volumeCold * 0.5 * (1 - contrast) + volumeHot * 0.5 * (1 + contrast)
+        volume1 = volumeCold * 0.5 * (1 + contrast) + volumeHot * 0.5 * (1 - contrast)
+        volume2 = volumeCold * 0.5 * (1 - contrast) + volumeHot * 0.5 * (1 + contrast)
 
         const height1 = ( canvas.height - 2*p ) * volume1          
         const height2 = ( canvas.height - 2*p ) * volume2
@@ -407,44 +432,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
         //ctx.fillRect(i * rectWidth + p, j * rectHeight + p, rectWidth, rectHeight);
 
-        //Dynamic - invert isEven after repating jetSwitchCountMax
-        jetSwitchCount ++
-        let isEven = i % 2
-
-        if( cbDynamic.checked && jetSwitchCount > jetSwitchCountMax ){
-            jetSwitchCount = 0
-            invert = ! invert
-        }
-        isEven = invert ? !isEven : isEven;  // Инвертируем isEven, если invert = true
-
         if (animatedBatch.isAnimating){
-            for (let i=0; i<numOfJets; i++){
+            updateJetCOnfiguration()
+        }
+    });
 
-            if ( isEven === 0 ) {
+    
+    function updateJetCOnfiguration(){
+        for (let i=0; i<numOfJets; i++){
+            let isEven = ( i % 2 === 0 )
+
+            isEven = invert ? !isEven : isEven;  // Инвертируем isEven, если invert = true
+
+            if ( isEven ) {
                 jets[i].setColor(colorCold);
                 jets[i].setWidth(jetWidth * volume1);
                 jets[i].jetLengthVariablePart = jetLengthVariablePart * 5 *volume1 ;
-                jets[i].jetSpaceVariablePart = jetSpaceVariablePart /(0.1 + volume1);
-                // console.log(jets[i].jetSpaceVariablePart )
+                jets[i].jetSpaceVariablePart = jetSpaceVariablePart / (0.1 + volume1);
+                // console.log(` even  ${i}  -  ${jets[i].setWidth(jetWidth * volume1)}` )
             }
             else{
                 jets[i].setColor(colorHot);
                 jets[i].setWidth(jetWidth * volume2);
                 jets[i].jetLengthVariablePart = jetLengthVariablePart * 5 *volume2 ;
-                jets[i].jetSpaceVariablePart = jetSpaceVariablePart /(0.1 + volume1);
+                jets[i].jetSpaceVariablePart = jetSpaceVariablePart / (0.1 + volume2);
+                // console.log(` odd   ${i}  -  ${jets[i].setWidth(jetWidth * volume1)}` )
             }
 
             jets[i].setSpeed(valueApmlitude * speedCoefficient + 0.1);        // value chosen empiricaly
-
-            }
         }
-    });
+    }
 
 
-    lever2D_1.addListener((newValue, newValue2) => {
+
+    // lever2D_1.addListener((newValue, newValue2) => {
 
 
-    });
+    // });
     lever2D_1.setValues(0.5, 0.5);
 
 
