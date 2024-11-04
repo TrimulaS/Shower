@@ -212,7 +212,7 @@ class LeverControl2D {
 
     // Уведомление слушателей
     notifyListeners() {
-        this.listeners.forEach(listener => listener(this.#value,this.#valueOld, this.#value2, this.#value2Old,));
+        this.listeners.forEach(listener => listener(this.#value,this.#valueOld, this.#value2, this.#value2Old));
     }
 
     // Приватный метод для установки угла

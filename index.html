@@ -27,6 +27,7 @@
             flex-direction: column;
             /* border: 1px solid rgb(200, 200, 255); */
             /* Display */
+            justify-self: center;
             width  : 1282px;
             height : 722px;
             padding: 5px;
@@ -188,7 +189,7 @@
                     </label>
                 </div>
                 <div id="cb-dynamic" class = 'flex-row'>
-                    <input type="checkbox" checked>
+                    <input type="checkbox">                         <!-- <input type="checkbox" checked> -->
                     Dynamic
                 </div>
                 <div id="block-lever-contrast" class = 'block-lever'>
@@ -346,14 +347,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (event.target.checked) {
                 switch (event.target.value) {
                     case 'common':
+                        leverContrast.setValue(0) 
+                        lever2D_1.setValue(0)
+                        lever2D_1.setValue2(0)
                         blockLeverContrast.classList = 'hidden';
                         cbDynamic.style.display = 'none'
-                        leverContrast.setValue(0) 
                         break;
                     case 'anisothermal':
+                        lever2D_1.setValue(0)
+                        lever2D_1.setValue2(0)
                         blockLeverContrast.classList = 'block-lever';
-                        // blockLeverContrast.class = 'hidden';
-                        // blockLeverContrast.style.visibility = 'visible';
                         cbDynamic.style.display = 'block'
                         break;
                     default:
@@ -494,11 +497,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // lever2D_1.addListener((newValue, newValue2) => {
+    lever2D_1.addListener((value,valueOld, value2, value2Old,) => {
+        if(value2 > 0 && !animatedBatch.isAnimating) buttonStart.click()
 
-
-    // });
-    lever2D_1.setValues(0.5, 0.5);
+    });
+    lever2D_1.setValues(0, 0);
 
 
 
