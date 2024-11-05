@@ -188,8 +188,8 @@
                         --><span class="red" >l</span>
                     </label>
                 </div>
-                <div id="cb-dynamic" class = 'flex-row'>
-                    <input type="checkbox">                         <!-- <input type="checkbox" checked> -->
+                <div id="cb-dynamic-continer" class = 'flex-row'>
+                    <input id="cb-dynamic"  type="checkbox">                         <!-- <input type="checkbox" checked> -->
                     Dynamic
                 </div>
                 <div id="block-lever-contrast" class = 'block-lever'>
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //Stars
     const maxNumOfStars = 30
-    const starHeightDelta = 10
+    const starHeightDelta = 50
     const starShine = 400       //ms
     const starFade  = 400        //ms
     const spikeLength = 5
@@ -329,6 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
     leverContrast.setValue(0) 
 
 
+    const cbDynamicContainer = document.getElementById('cb-dynamic-continer');
     const cbDynamic = document.getElementById('cb-dynamic');
     
     // cbDynamic.addEventListener('change', (e) => {
@@ -351,13 +352,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         lever2D_1.setValue(0)
                         lever2D_1.setValue2(0)
                         blockLeverContrast.classList = 'hidden';
-                        cbDynamic.style.display = 'none'
+                        cbDynamicContainer.style.display = 'none'
                         break;
                     case 'anisothermal':
                         lever2D_1.setValue(0)
                         lever2D_1.setValue2(0)
                         blockLeverContrast.classList = 'block-lever';
-                        cbDynamic.style.display = 'block'
+                        cbDynamicContainer.style.display = 'block'
                         break;
                     default:
                         console.log(`Wrong radioButton value ${event.target.checked}.`);
@@ -374,6 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const animatedItem1 = new AnimatedItem(() => {
         //1. Dynamic - invert isEven after repating 
+        // console.log(`jetSwitchCount ${jetSwitchCount}`)
         if( cbDynamic.checked ){
             jetSwitchCount ++
 
